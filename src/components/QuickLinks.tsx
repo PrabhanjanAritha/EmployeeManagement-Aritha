@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
 
 export const QuickLinks: React.FC = () => {
   const { palette } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -10,7 +12,7 @@ export const QuickLinks: React.FC = () => {
         Quick Links
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <button style={{ backgroundColor: palette.primary, color: 'white' }} className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors">
+        <button onClick={() => navigate('/employees/add')} style={{ backgroundColor: palette.primary, color: 'white' }} className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors">
           <span className="material-symbols-outlined">person_add</span>
           <span className="text-base font-semibold">Add Employee</span>
         </button>

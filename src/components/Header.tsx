@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
 
 interface HeaderProps {
@@ -8,6 +9,21 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
   const { isDark, palette } = useTheme();
+  const location = useLocation();
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/' || path === '/dashboard') return 'Dashboard Overview';
+    if (path === '/employees' || path.startsWith('/employees')) {
+      if (path === '/employees/add') return 'Add Employee';
+      if (/^\/employees\/[^/]+/.test(path)) return 'Employee Details';
+      return 'Employees';
+    }
+    if (path === '/teams') return 'Teams';
+    if (path === '/clients') return 'Clients';
+    if (path === '/settings') return 'Settings';
+    return 'Dashboard Overview';
+  };
   const [isThemeHover, setIsThemeHover] = useState(false);
   const [isNotifHover, setIsNotifHover] = useState(false);
   const hoverBg = (hover: boolean) => (hover ? (isDark ? 'rgba(255,255,255,0.06)' : '#f0f2f5') : 'transparent');
@@ -29,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <h2 style={{ color: palette.textPrimary }} className="text-lg font-bold leading-tight tracking-[-0.015em]">Dashboard Overview</h2>
+        <h2 style={{ color: palette.textPrimary }} className="text-lg font-bold leading-tight tracking-[-0.015em]">{getPageTitle()}</h2>
       </div>
 
       <div className="flex flex-1 justify-end items-center gap-3 md:gap-4">

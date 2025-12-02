@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
 
 const sampleEmployees = [
@@ -9,11 +10,8 @@ const sampleEmployees = [
   { id: 'EMP005', name: 'Robert Fox', team: 'Design', doj: '07/12/2018', exp: '10 years' },
 ];
 
-interface EmployeesProps {
-  onNavigate?: (page: string) => void;
-}
-
-export const Employees: React.FC<EmployeesProps> = ({ onNavigate }) => {
+export const Employees: React.FC = () => {
+  const navigate = useNavigate();
   const { palette } = useTheme();
 
   return (
@@ -25,7 +23,7 @@ export const Employees: React.FC<EmployeesProps> = ({ onNavigate }) => {
         </div>
 
         <div>
-          <button onClick={() => onNavigate?.('add-employee')} style={{ backgroundColor: palette.primary, color: '#fff' }} className="px-4 py-2 rounded-lg">
+          <button onClick={() => navigate('/employees/add')} style={{ backgroundColor: palette.primary, color: '#fff' }} className="px-4 py-2 rounded-lg">
             + Add Employee
           </button>
         </div>
