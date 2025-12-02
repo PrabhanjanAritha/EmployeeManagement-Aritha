@@ -16,14 +16,14 @@ export const Employees: React.FC = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 style={{ color: palette.textPrimary }} className="text-2xl font-bold">Employee List</h1>
-          <p style={{ color: palette.textSecondary }} className="mt-1">A quick view of all employees</p>
-        </div>
-
-        <div>
-          <button onClick={() => navigate('/employees/add')} style={{ backgroundColor: palette.primary, color: '#fff' }} className="px-4 py-2 rounded-lg">
+      {/* <nav style={{ color: palette.textSecondary }} className="text-sm mb-4">Home / <strong style={{ color: palette.textPrimary }}>Employees</strong></nav> */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 style={{ color: palette.textPrimary, fontSize: 20, fontWeight: 600, margin: 0 }}>All Employees</h2>
+            <p style={{ color: palette.textSecondary, fontSize: 14, fontWeight: 400, margin: '6px 0 0 0' }}>A quick view of all employees</p>
+          </div>
+          <button onClick={() => navigate('/employees/add')} style={{ backgroundColor: palette.primary, color: '#fff' }} className="px-5 py-2 rounded-lg whitespace-nowrap">
             + Add Employee
           </button>
         </div>

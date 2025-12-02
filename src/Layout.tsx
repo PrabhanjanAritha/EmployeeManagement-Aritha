@@ -19,8 +19,8 @@ export const Layout: React.FC = () => {
     const path = location.pathname;
     if (path === '/' || path === '/dashboard') return 'dashboard';
     if (path.includes('/employees')) return 'employees';
-    if (path === '/teams') return 'teams';
-    if (path === '/clients') return 'clients';
+    if (path.includes('/teams')) return 'teams';
+    if (path.includes('/clients')) return 'clients';
     if (path === '/settings') return 'settings';
     return 'dashboard';
   };

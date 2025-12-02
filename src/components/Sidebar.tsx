@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, currentPage, onNavigat
                 } : {
                   color: palette.textPrimary,
                 }}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full text-left ${isActive ? 'font-semibold' : 'font-medium'}`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full text-left cursor-pointer ${isActive ? 'font-semibold' : 'font-medium'}`}
               >
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <p className="text-sm leading-normal">{item.label}</p>

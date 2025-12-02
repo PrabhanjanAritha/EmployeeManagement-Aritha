@@ -19,8 +19,12 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
       if (/^\/employees\/[^/]+/.test(path)) return 'Employee Details';
       return 'Employees';
     }
-    if (path === '/teams') return 'Teams';
-    if (path === '/clients') return 'Clients';
+    if (path === '/teams' || path === '/teams/') return 'Teams';
+    if (path === '/teams/add') return 'Add Team';
+    if (/^\/teams\/[^/]+/.test(path)) return 'Team Details';
+    if (path === '/clients' || path === '/clients/') return 'Clients';
+    if (path === '/clients/add') return 'Add Client';
+    if (/^\/clients\/[^/]+/.test(path)) return 'Client Details';
     if (path === '/settings') return 'Settings';
     return 'Dashboard Overview';
   };
