@@ -43,7 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, currentPage, onNavigat
 
         <nav className="flex flex-col gap-2 mt-4">
           {navItems.map((item) => {
-            const isActive = currentPage === item.id;
+            const isActive = currentPage === item.id || 
+              (item.id === 'employees' && (currentPage === 'add-employee' || currentPage === 'employee-details'));
             return (
               <button
                 key={item.id}

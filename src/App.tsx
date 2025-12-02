@@ -4,6 +4,9 @@ import { toggleTheme as toggleThemeAction } from './store/themeSlice';
 import type { RootState } from './store';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
+import { Employees } from './pages/Employees';
+import { AddEmployee } from './pages/AddEmployee';
+import { EmployeeDetails } from './pages/EmployeeDetails';
 import { Header } from './components/Header';
 // import { Employees } from './pages/Employees';
 // import { Teams } from './pages/Teams';
@@ -39,7 +42,11 @@ export default function App() {
       case 'dashboard':
         return <Dashboard />;
       case 'employees':
-        return <Dashboard />;
+        return <Employees onNavigate={setCurrentPage} />;
+      case 'add-employee':
+        return <AddEmployee />;
+      case 'employee-details':
+        return <EmployeeDetails />;
       case 'teams':
         return <Dashboard />;
       case 'clients':
