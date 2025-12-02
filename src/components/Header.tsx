@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/authSlice';
+
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -10,6 +14,9 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
   const { isDark, palette } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const getPageTitle = () => {
     const path = location.pathname;
@@ -30,6 +37,12 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
   };
   const [isThemeHover, setIsThemeHover] = useState(false);
   const [isNotifHover, setIsNotifHover] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
   const hoverBg = (hover: boolean) => (hover ? (isDark ? 'rgba(255,255,255,0.06)' : '#f0f2f5') : 'transparent');
 
   return (
@@ -100,12 +113,54 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
           <span className="material-symbols-outlined">notifications</span>
         </button>
 
-        <div
-          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full"
-          style={{ backgroundImage: 'url("https://picsum.photos/200/200")', border: `1px solid ${palette.border}`, width: 40, height: 40 }}
-          role="img"
-          aria-label="User avatar"
-        ></div>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full cursor-pointer transition-transform hover:scale-105"
+            style={{ backgroundImage: 'url("https://picsum.photos/200/200")', border: `1px solid ${palette.border}`, width: 40, height: 40 }}
+            title="Profile menu"
+          />
+          {showProfileMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                backgroundColor: palette.surface,
+                border: `1px solid ${palette.border}`,
+                borderRadius: 8,
+                marginTop: 8,
+                minWidth: 160,
+                boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
+                zIndex: 1000,
+              }}
+            >
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  textAlign: 'left',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: palette.textPrimary,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  borderRadius: 8,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDark ? '#1f2937' : '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ marginRight: 8, fontSize: 18, verticalAlign: 'middle' }}>logout</span>
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
