@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
 
 export const AddEmployee: React.FC = () => {
   const { palette } = useTheme();
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const navigate = useNavigate();
 
   return (
     <div>
       <h1 style={{ color: palette.textPrimary }} className="text-2xl font-bold mb-2">Add New Employee</h1>
       <p style={{ color: palette.textSecondary }} className="mb-6">Fill in the details below to add a new employee to the system.</p>
 
-      <div style={{ backgroundColor: palette.surface, borderColor: palette.border }} className="rounded-xl p-6 border shadow-sm">
+      <form ref={formRef} onSubmit={(e) => e.preventDefault()} style={{ backgroundColor: palette.surface, borderColor: palette.border }} className="rounded-xl p-6 border shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label>
             <div style={{ color: palette.textSecondary }} className="mb-1">Employee ID</div>
@@ -50,10 +53,40 @@ export const AddEmployee: React.FC = () => {
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button style={{ border: `1px solid ${palette.border}`, background: 'transparent', color: palette.textPrimary }} className="px-4 py-2 rounded">Cancel</button>
-          <button style={{ backgroundColor: palette.primary, color: '#fff' }} className="px-4 py-2 rounded">Save</button>
+          <button
+            type="button"
+            onClick={() => navigate('/employees')}
+            style={{ border: `1px solid ${palette.border}`, background: 'transparent', color: palette.textPrimary }}
+            className="px-4 py-2 rounded flex items-center gap-2"
+            title="Cancel"
+          >
+            <span className="material-symbols-outlined">close</span>
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { formRef.current?.reset(); }}
+            style={{ border: `1px solid ${palette.border}`, background: 'transparent', color: palette.textPrimary }}
+            className="px-4 py-2 rounded flex items-center gap-2"
+            title="Reset"
+          >
+            <span className="material-symbols-outlined">refresh</span>
+            Reset
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{ backgroundColor: palette.primary, color: '#fff' }}
+            className="px-4 py-2 rounded flex items-center gap-2"
+            title="Back"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

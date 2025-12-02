@@ -61,8 +61,15 @@ export const Employees: React.FC = () => {
                 <td style={{ padding: 16, color: palette.textPrimary }}>{e.doj}</td>
                 <td style={{ padding: 16, color: palette.textPrimary }}>{e.exp}</td>
                 <td style={{ padding: 16 }}>
-                  <button style={{ color: palette.textSecondary }} className="mr-3">✏️</button>
-                  <button style={{ color: palette.textSecondary }}>🗑️</button>
+                  <button
+                    onClick={() => navigate(`/employees/${e.id}`)}
+                    style={{ color: palette.textSecondary }}
+                    className="mr-3"
+                    title={`Edit ${e.name}`}
+                  >
+                    ✏️
+                  </button>
+                  <button style={{ color: palette.textSecondary }} title={`Delete ${e.name}`}>🗑️</button>
                 </td>
               </tr>
             ))}
