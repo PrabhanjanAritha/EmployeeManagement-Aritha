@@ -10,11 +10,16 @@ import { Clients } from './pages/Clients';
 import { AddClient } from './pages/AddClient';
 import { Login } from './pages/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={
+        <PublicRoute>  
+          <Login />
+        </PublicRoute>
+        } />
       <Route
         element={
           <ProtectedRoute>

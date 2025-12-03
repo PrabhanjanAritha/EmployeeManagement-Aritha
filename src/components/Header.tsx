@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../theme/useTheme';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { logout } from '../store/authSlice';
+// import { useDispatch } from 'react-redux';
+// import { logout } from '../store/authSlice';
 
 
 interface HeaderProps {
@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
   const { isDark, palette } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const getPageTitle = () => {
@@ -38,10 +38,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
   const [isThemeHover, setIsThemeHover] = useState(false);
   const [isNotifHover, setIsNotifHover] = useState(false);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  navigate("/login");
+};
 
   const hoverBg = (hover: boolean) => (hover ? (isDark ? 'rgba(255,255,255,0.06)' : '#f0f2f5') : 'transparent');
 

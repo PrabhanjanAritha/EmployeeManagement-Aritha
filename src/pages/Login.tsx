@@ -1,44 +1,52 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Row, Col, message } from 'antd';
-import { useDispatch } from 'react-redux';
-import { useTheme } from '../theme/useTheme';
-import { StyleProvider } from '@ant-design/cssinjs';
-import { login } from '../store/authSlice';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Row, Col, message } from "antd";
+// import { useDispatch } from 'react-redux';
+import { useTheme } from "../theme/useTheme";
+import { StyleProvider } from "@ant-design/cssinjs";
+import { loginApi } from "../api/auth";
+import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
 export const Login: React.FC = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const { palette, isDark } = useTheme();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [form] = Form.useForm();
+  // const dispatch = useDispatch();
+  const [form] = Form.useForm<LoginFormValues>();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: any) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      if (
-        values.email === 'admin@arithaconsulting.com' &&
-        values.password === 'Aritha@010'
-      ) {
-        dispatch(login({ email: values.email }));
-        message.success('Login successful!');
-        navigate('/');
-      } else {
-        message.error('Invalid email or password');
-      }
+  const onFinish = async (values: LoginFormValues) => {
+    try {
+      setLoading(true);
+      const user = await loginApi(values);
+
+      message.success(`Welcome, ${user.email}`);
+      // redirect wherever your "home" is
+      navigate("/dashboard"); // or "/employees" etc.
+    } catch (err: any) {
+      console.log("coming here");
+      const backendMsg = err?.response?.data?.message;
+      messageApi.error(
+        backendMsg || "Login failed. Please check your credentials."
+      );
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   return (
     <StyleProvider autoClear>
+      {contextHolder}
       <div
         className="ae-root"
         style={{
-          backgroundColor: isDark ? '#020617' : '#f3f4f6',
+          backgroundColor: isDark ? "#020617" : "#f3f4f6",
           color: palette.textPrimary,
         }}
       >
@@ -341,24 +349,23 @@ export const Login: React.FC = () => {
           className="ae-frame fade-up"
           style={{
             background: isDark
-              ? 'linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.96))'
-              : 'linear-gradient(145deg, #ffffff, #f9fafb)',
+              ? "linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.96))"
+              : "linear-gradient(145deg, #ffffff, #f9fafb)",
             border: `1px solid ${palette.border}`,
           }}
         >
           <div className="ae-frame-inner">
             <Row gutter={24} align="middle">
               {/* LEFT SIDE - Branding (inside same frame) */}
-              <Col 
-  xs={0} 
-  md={12}
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-
+              <Col
+                xs={0}
+                md={12}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <div className="ae-left-wrap">
                   <div className="ae-left-inner">
                     <div className="ae-left-gradient" />
@@ -372,9 +379,9 @@ export const Login: React.FC = () => {
                         Modern HR dashboard for people ops and teams.
                       </div>
                       <p className="ae-desc">
-                        Welcome to Aritha — manage employees, teams and clients with a single,
-                        fast interface. Sign in to continue to your dashboard and keep
-                        everything in one place.
+                        Welcome to Aritha — manage employees, teams and clients
+                        with a single, fast interface. Sign in to continue to
+                        your dashboard and keep everything in one place.
                       </p>
                       <button type="button" className="ae-cta">
                         Get started
@@ -389,8 +396,6 @@ export const Login: React.FC = () => {
                 <div className="ae-right-wrap">
                   <div className="ae-right-inner">
                     <div className="ae-card-header">
-                     
-                        
                       <h2
                         className="ae-card-title"
                         style={{ color: palette.textPrimary }}
@@ -423,8 +428,8 @@ export const Login: React.FC = () => {
                           </span>
                         }
                         rules={[
-                          { required: true, message: 'Email is required' },
-                          { type: 'email', message: 'Enter a valid email' },
+                          { required: true, message: "Email is required" },
+                          { type: "email", message: "Enter a valid email" },
                         ]}
                         className="ae-input"
                       >
@@ -432,7 +437,7 @@ export const Login: React.FC = () => {
                           type="email"
                           placeholder="admin@arithaconsulting.com"
                           style={{
-                            backgroundColor: isDark ? '#020617' : '#f9fafb',
+                            backgroundColor: isDark ? "#020617" : "#f9fafb",
                             borderColor: palette.border,
                             color: palette.textPrimary,
                           }}
@@ -449,13 +454,26 @@ export const Login: React.FC = () => {
                             Password
                           </span>
                         }
-                        rules={[{ required: true, message: 'Password is required' }]}
+                        rules={[
+                          { required: true, message: "Password is required" },
+                        ]}
                         className="ae-input"
                       >
                         <Input.Password
                           placeholder="Enter your password"
+                          iconRender={(visible) =>
+                            visible ? (
+                              <EyeTwoTone
+                                twoToneColor={isDark ? "#fff" : "#000"}
+                              />
+                            ) : (
+                              <EyeInvisibleTwoTone
+                                twoToneColor={isDark ? "#fff" : "#000"}
+                              />
+                            )
+                          }
                           style={{
-                            backgroundColor: isDark ? '#020617' : '#f9fafb',
+                            backgroundColor: isDark ? "#020617" : "#f9fafb",
                             borderColor: palette.border,
                             color: palette.textPrimary,
                           }}
@@ -470,7 +488,7 @@ export const Login: React.FC = () => {
                           style={{
                             backgroundColor: palette.primary,
                             borderColor: palette.primary,
-                            width: '100%',
+                            width: "100%",
                             height: 44,
                             fontSize: 15,
                           }}
@@ -484,7 +502,7 @@ export const Login: React.FC = () => {
                     <div
                       className="ae-demo-block"
                       style={{
-                        backgroundColor: isDark ? '#020617' : '#f9fafb',
+                        backgroundColor: isDark ? "#020617" : "#f9fafb",
                         color: palette.textSecondary,
                       }}
                     >
@@ -503,7 +521,8 @@ export const Login: React.FC = () => {
                       className="ae-footer-hint"
                       style={{ color: palette.textSecondary }}
                     >
-                      Use the above demo login to explore the Aritha Employee Portal.
+                      Use the above demo login to explore the Aritha Employee
+                      Portal.
                     </div>
                   </div>
                 </div>
