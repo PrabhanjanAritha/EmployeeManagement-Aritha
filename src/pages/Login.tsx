@@ -513,7 +513,7 @@ export const Login: React.FC = () => {
                           Email:&nbsp;admin@arithaconsulting.com
                         </div>
                         <div className="ae-demo-cred">
-                          Password:&nbsp;Aritha@010
+                          Password:&nbsp;admin123
                         </div>
                       </div>
                     </div>
