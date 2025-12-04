@@ -20,8 +20,9 @@ export const Login: React.FC = () => {
   // const dispatch = useDispatch();
   const [form] = Form.useForm<LoginFormValues>();
   const [loading, setLoading] = useState(false);
-
+  console.log("loaded login page");
   const onFinish = async (values: LoginFormValues) => {
+    console.log("on finish clicked");
     try {
       setLoading(true);
       const user = await loginApi(values);

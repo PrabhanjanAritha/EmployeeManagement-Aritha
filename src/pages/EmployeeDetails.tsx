@@ -72,7 +72,7 @@ export const EmployeeDetails: React.FC = () => {
   const [noteText, setNoteText] = useState("");
   const [loading, setLoading] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
