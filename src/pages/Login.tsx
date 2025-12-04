@@ -6,6 +6,7 @@ import { useTheme } from "../theme/useTheme";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { loginApi } from "../api/auth";
 import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
+import Logo from "../components/ui/Logo";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type LoginFormValues = {
@@ -372,9 +373,10 @@ export const Login: React.FC = () => {
                     <div className="ae-left-gradient" />
                     <div className="ae-left-blur" />
                     <div className="ae-left-content">
-                      <div className="ae-logo">
+                      {/* <div className="ae-logo">
                         <span style={{ fontSize: 24 }}>AE</span>
-                      </div>
+                      </div> */}
+                      <Logo />
                       <h1 className="ae-title">Aritha Employee Portal</h1>
                       <div className="ae-sub">
                         Modern HR dashboard for people ops and teams.
