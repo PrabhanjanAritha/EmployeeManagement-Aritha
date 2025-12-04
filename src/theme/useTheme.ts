@@ -8,7 +8,7 @@ export const useTheme = () => {
   const location = useLocation();
 
   // Force light theme on login route
-  const forceLight = location.pathname === "/login" || true;
+  const forceLight = location.pathname === "/login";
   const isDark = forceLight ? false : themeMode === "dark";
 
   const palette = useMemo(
