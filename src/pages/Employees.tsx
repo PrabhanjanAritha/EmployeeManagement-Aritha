@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Switch, message, Modal } from "antd";
+import { Table, Switch, Modal, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTheme } from "../theme/useTheme";
 import { getEmployees, toggleEmployeeStatus } from "../api/employees";
@@ -28,6 +28,8 @@ interface EmployeeRow {
 export const Employees: React.FC = () => {
   const navigate = useNavigate();
   const { palette } = useTheme();
+  const [modal, contextHolder] = Modal.useModal();
+  const [messageApi, contextHolder2] = message.useMessage();
 
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -160,7 +162,8 @@ export const Employees: React.FC = () => {
 
   // ✅ Handle delete - just toggles status (soft delete)
   const handleDelete = (employee: EmployeeRow) => {
-    Modal.confirm({
+    console.log("coming here");
+    modal.confirm({
       title: employee.active ? "Deactivate Employee" : "Activate Employee",
       content: employee.active
         ? `Are you sure you want to deactivate ${employee.firstName} ${employee.lastName}? They will be moved to inactive employees.`
@@ -168,20 +171,30 @@ export const Employees: React.FC = () => {
       okText: employee.active ? "Deactivate" : "Activate",
       okType: employee.active ? "danger" : "primary",
       cancelText: "Cancel",
-      onOk: async () => {
-        try {
-          await toggleEmployeeStatus(employee.id);
-          message.success(
-            `Employee ${
-              employee.active ? "deactivated" : "activated"
-            } successfully`
-          );
-          fetchEmployees();
-        } catch (err) {
-          console.error("Failed to toggle employee status", err);
-          message.error("Failed to update employee status");
-        }
-      },
+      onOk: () =>
+        new Promise<void>((resolve, reject) => {
+          toggleEmployeeStatus(employee.id)
+            .then(() => {
+              messageApi.success(
+                `Employee ${
+                  employee.active ? "deactivated" : "activated"
+                } successfully`
+              );
+
+              // In case fetchEmployees is not async, normalize it:
+              return Promise.resolve(fetchEmployees());
+            })
+            .then(() => {
+              // ✅ All good: close modal
+              resolve();
+            })
+            .catch((err) => {
+              console.error("Failed to toggle employee status", err);
+              messageApi.error("Failed to update employee status");
+              // ❌ Tell AntD it failed (keeps the modal open / stops spinner)
+              reject(err);
+            });
+        }),
     });
   };
 
@@ -387,6 +400,8 @@ export const Employees: React.FC = () => {
 
   return (
     <div className="w-full">
+      {contextHolder}
+      {contextHolder2}
       {/* TOP BAR */}
       <div className="mb-4">
         <div className="flex items-center justify-between gap-4 pl-1">

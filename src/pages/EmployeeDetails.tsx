@@ -322,7 +322,7 @@ export const EmployeeDetails: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1
-                style={{ color: palette.textPrimary }}
+                style={{ color: palette.textPrimary_w }}
                 className="text-2xl font-bold"
               >
                 {fullName || "Employee Details"}
@@ -349,7 +349,7 @@ export const EmployeeDetails: React.FC = () => {
           {/* Editable form section */}
           <div
             style={{
-              backgroundColor: palette.surface,
+              // backgroundColor: palette.surface,
               borderColor: palette.border,
             }}
             className="rounded-xl p-6 border shadow-sm mb-6"
@@ -588,14 +588,29 @@ export const EmployeeDetails: React.FC = () => {
               {isEditing && (
                 <div className="mt-6 flex justify-end gap-3">
                   <Button
+                    color="danger"
+                    variant="dashed"
+                    disabled
+                    onClick={handleCancelEdit}
+                    style={{
+                      // border: `1px solid ${palette.border_w}`,
+                      background: "transparent",
+                      color: palette.textPrimary_w,
+                    }}
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                    Delete
+                  </Button>
+                  <Button
                     type="default"
                     onClick={handleCancelEdit}
                     style={{
-                      border: `1px solid ${palette.border}`,
+                      border: `1px solid ${palette.border_w}`,
                       background: "transparent",
-                      color: palette.textPrimary,
+                      color: palette.textPrimary_w,
                     }}
                   >
+                    <span className="material-symbols-outlined">close</span>
                     Cancel
                   </Button>
 
@@ -603,11 +618,12 @@ export const EmployeeDetails: React.FC = () => {
                     type="default"
                     onClick={() => form.resetFields()}
                     style={{
-                      border: `1px solid ${palette.border}`,
+                      border: `1px solid ${palette.border_w}`,
                       background: "transparent",
-                      color: palette.textPrimary,
+                      color: palette.textPrimary_w,
                     }}
                   >
+                    <span className="material-symbols-outlined">refresh</span>
                     Reset
                   </Button>
 
@@ -620,6 +636,7 @@ export const EmployeeDetails: React.FC = () => {
                       borderColor: palette.primary,
                     }}
                   >
+                    <span className="material-symbols-outlined">edit</span>
                     Update
                   </Button>
                 </div>
@@ -630,13 +647,13 @@ export const EmployeeDetails: React.FC = () => {
           {/* Notes section */}
           <div
             style={{
-              backgroundColor: palette.surface,
+              // backgroundColor: palette.surface,
               borderColor: palette.border,
             }}
             className="rounded-xl p-6 border shadow-sm"
           >
             <h3
-              style={{ color: palette.textPrimary }}
+              style={{ color: palette.textPrimary_w }}
               className="text-lg font-semibold mb-3"
             >
               Notes
@@ -645,9 +662,9 @@ export const EmployeeDetails: React.FC = () => {
             {/* SMALL READ-ONLY DATE PILL */}
             <div
               style={{
-                backgroundColor: palette.cardBg ?? palette.surface,
-                border: `1px solid ${palette.border}`,
-                color: palette.textSecondary,
+                backgroundColor: palette.surface_w,
+                border: `1px solid ${palette.border_w}`,
+                color: palette.textSecondary_w,
                 padding: "6px 12px",
                 fontSize: 13,
                 borderRadius: 8,
@@ -662,9 +679,9 @@ export const EmployeeDetails: React.FC = () => {
             <div
               style={{
                 borderRadius: 8,
-                border: `1px solid ${palette.border}`,
+                border: `1px solid ${palette.border_w}`,
                 overflow: "hidden",
-                backgroundColor: palette.surface,
+                backgroundColor: palette.surface_w,
                 marginBottom: 16,
               }}
             >
@@ -685,7 +702,7 @@ export const EmployeeDetails: React.FC = () => {
                   borderColor: palette.primary,
                 }}
               >
-                Add Note
+                + Add Note
               </Button>
             </div>
 
@@ -712,7 +729,7 @@ export const EmployeeDetails: React.FC = () => {
                   >
                     <span
                       style={{
-                        color: palette.textSecondary,
+                        color: palette.textSecondary_w,
                         fontSize: 12,
                       }}
                     >
@@ -720,7 +737,7 @@ export const EmployeeDetails: React.FC = () => {
                     </span>
                     <span
                       style={{
-                        color: palette.textSecondary,
+                        color: palette.textSecondary_w,
                         fontSize: 12,
                       }}
                     >
@@ -730,7 +747,7 @@ export const EmployeeDetails: React.FC = () => {
 
                   {/* Render HTML */}
                   <div
-                    style={{ color: palette.textPrimary, fontSize: 14 }}
+                    style={{ color: palette.textPrimary_w, fontSize: 14 }}
                     dangerouslySetInnerHTML={{ __html: note.content }}
                   />
                 </List.Item>
