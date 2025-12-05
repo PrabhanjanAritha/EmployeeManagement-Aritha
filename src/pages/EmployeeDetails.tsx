@@ -82,7 +82,14 @@ export const EmployeeDetails: React.FC = () => {
       try {
         setLoading(true);
 
-        const emp = await getEmployeeById(employeeId);
+        const response = await getEmployeeById(employeeId);
+
+        // Properly extract employee data from response
+        const emp: Employee =
+          "success" in response && response.success
+            ? response.data
+            : (response as unknown as Employee);
+
         setEmployee(emp);
 
         form.setFieldsValue({
@@ -99,7 +106,10 @@ export const EmployeeDetails: React.FC = () => {
           experienceMonths: emp.experienceMonthsAtJoining ?? undefined,
         });
 
-        const notesData = await getEmployeeNotes(employeeId);
+        const notesResponse = await getEmployeeNotes(employeeId);
+        const notesData = Array.isArray(notesResponse)
+          ? notesResponse
+          : (notesResponse as { data?: EmployeeNote[] }).data || [];
         setNotes(notesData);
       } catch (err) {
         console.error("Failed to load employee details", err);
@@ -110,7 +120,8 @@ export const EmployeeDetails: React.FC = () => {
     };
 
     fetchData();
-  }, [employeeId, form, messageApi]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId]);
 
   const onAddNote = async () => {
     if (!noteText.trim()) {

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useTheme } from '../theme/useTheme';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useTheme } from "../theme/useTheme";
+import { useNavigate } from "react-router-dom";
 // import { useDispatch } from 'react-redux';
 // import { logout } from '../store/authSlice';
-
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -20,31 +19,32 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/' || path === '/dashboard') return 'Dashboard Overview';
-    if (path === '/employees' || path.startsWith('/employees')) {
-      if (path === '/employees/add') return 'Add Employee';
-      if (/^\/employees\/[^/]+/.test(path)) return 'Employee Details';
-      return 'Employees';
+    if (path === "/" || path === "/dashboard") return "Dashboard Overview";
+    if (path === "/employees" || path.startsWith("/employees")) {
+      if (path === "/employees/add") return "Add Employee";
+      if (/^\/employees\/[^/]+/.test(path)) return "Employee Details";
+      return "Employees";
     }
-    if (path === '/teams' || path === '/teams/') return 'Teams';
-    if (path === '/teams/add') return 'Add Team';
-    if (/^\/teams\/[^/]+/.test(path)) return 'Team Details';
-    if (path === '/clients' || path === '/clients/') return 'Clients';
-    if (path === '/clients/add') return 'Add Client';
-    if (/^\/clients\/[^/]+/.test(path)) return 'Client Details';
-    if (path === '/settings') return 'Settings';
-    return 'Dashboard Overview';
+    if (path === "/teams" || path === "/teams/") return "Teams";
+    if (path === "/teams/add") return "Add Team";
+    if (/^\/teams\/[^/]+/.test(path)) return "Team Details";
+    if (path === "/clients" || path === "/clients/") return "Clients";
+    if (path === "/clients/add") return "Add Client";
+    if (/^\/clients\/[^/]+/.test(path)) return "Client Details";
+    if (path === "/settings") return "Settings";
+    return "Dashboard Overview";
   };
   const [isThemeHover, setIsThemeHover] = useState(false);
-  const [isNotifHover, setIsNotifHover] = useState(false);
+  // const [isNotifHover, setIsNotifHover] = useState(false);
 
- const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  navigate("/login");
-};
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
-  const hoverBg = (hover: boolean) => (hover ? (isDark ? 'rgba(255,255,255,0.06)' : '#f0f2f5') : 'transparent');
+  const hoverBg = (hover: boolean) =>
+    hover ? (isDark ? "rgba(255,255,255,0.06)" : "#f0f2f5") : "transparent";
 
   return (
     <header
@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
         color: palette.textPrimary,
         borderBottom: `1px solid ${palette.border}`,
       }}
-      className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 md:px-10 transition-colors duration-200"
+      className="sticky top-0 z-30 flex items-center justify-between px-4 py-1 md:px-10 transition-colors duration-200"
     >
       <div className="flex items-center gap-4">
         <button
@@ -63,21 +63,32 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <h2 style={{ color: palette.textPrimary }} className="text-lg font-bold leading-tight tracking-[-0.015em]">{getPageTitle()}</h2>
+        <h2
+          style={{ color: palette.textPrimary }}
+          className="text-lg font-bold leading-tight tracking-[-0.015em]"
+        >
+          {getPageTitle()}
+        </h2>
       </div>
 
       <div className="flex flex-1 justify-end items-center gap-3 md:gap-4">
         <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-sm w-full">
           <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
-            <div style={{ color: '#60758a', backgroundColor: isDark ? '#111827' : '#f0f2f5' }} className="flex items-center justify-center pl-4 rounded-l-lg border-r-0 transition-colors">
+            <div
+              style={{
+                color: "#60758a",
+                backgroundColor: isDark ? "#111827" : "#f0f2f5",
+              }}
+              className="flex items-center justify-center pl-4 rounded-l-lg border-r-0 transition-colors"
+            >
               <span className="material-symbols-outlined">search</span>
             </div>
             <input
               placeholder="Search employees, teams..."
               style={{
                 color: palette.textPrimary,
-                backgroundColor: isDark ? '#111827' : '#f0f2f5',
-                border: 'none',
+                backgroundColor: isDark ? "#111827" : "#f0f2f5",
+                border: "none",
               }}
               className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal transition-colors"
             />
@@ -94,14 +105,14 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
             borderRadius: 8,
           }}
           className="flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 transition-colors"
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           <span className="material-symbols-outlined">
-            {isDark ? 'light_mode' : 'dark_mode'}
+            {isDark ? "light_mode" : "dark_mode"}
           </span>
         </button>
 
-        <button
+        {/* <button
           onMouseEnter={() => setIsNotifHover(true)}
           onMouseLeave={() => setIsNotifHover(false)}
           style={{
@@ -112,51 +123,69 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 transition-colors"
         >
           <span className="material-symbols-outlined">notifications</span>
-        </button>
+        </button> */}
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: "relative" }}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full cursor-pointer transition-transform hover:scale-105"
-            style={{ backgroundImage: 'url("https://picsum.photos/200/200")', border: `1px solid ${palette.border}`, width: 40, height: 40 }}
+            style={{
+              backgroundImage: 'url("https://picsum.photos/200/200")',
+              border: `1px solid ${palette.border}`,
+              width: 40,
+              height: 40,
+            }}
             title="Profile menu"
           />
           {showProfileMenu && (
             <div
               style={{
-                position: 'absolute',
-                top: '100%',
+                position: "absolute",
+                top: "100%",
                 right: 0,
                 backgroundColor: palette.surface,
                 border: `1px solid ${palette.border}`,
                 borderRadius: 8,
                 marginTop: 8,
                 minWidth: 160,
-                boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: isDark
+                  ? "0 4px 12px rgba(0,0,0,0.3)"
+                  : "0 4px 12px rgba(0,0,0,0.1)",
                 zIndex: 1000,
               }}
             >
               <button
                 onClick={handleLogout}
                 style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  textAlign: 'left',
-                  backgroundColor: 'transparent',
-                  border: 'none',
+                  width: "100%",
+                  padding: "12px 16px",
+                  textAlign: "left",
+                  backgroundColor: "transparent",
+                  border: "none",
                   color: palette.textPrimary,
-                  cursor: 'pointer',
+                  cursor: "pointer",
                   fontSize: 14,
                   borderRadius: 8,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? '#1f2937' : '#f3f4f6';
+                  e.currentTarget.style.backgroundColor = isDark
+                    ? "#1f2937"
+                    : "#f3f4f6";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = "transparent";
                 }}
               >
-                <span className="material-symbols-outlined" style={{ marginRight: 8, fontSize: 18, verticalAlign: 'middle' }}>logout</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    marginRight: 8,
+                    fontSize: 18,
+                    verticalAlign: "middle",
+                  }}
+                >
+                  logout
+                </span>
                 Logout
               </button>
             </div>

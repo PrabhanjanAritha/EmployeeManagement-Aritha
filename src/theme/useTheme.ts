@@ -21,6 +21,12 @@ export const useTheme = () => {
       border: isDark ? "#2D3748" : "#E9ECEF",
       primary: "#0066FF",
       primaryLight: "#E3F2FD",
+      background_w: "#FFFFFF",
+      surface_w: "#FFFFFF",
+      cardBg_w: "#FFFFFF",
+      textPrimary_w: "#111418",
+      textSecondary_w: "#6C757D",
+      border_w: "#E9ECEF",
     }),
     [isDark]
   );

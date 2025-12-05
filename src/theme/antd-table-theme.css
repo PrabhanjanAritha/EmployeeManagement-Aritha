@@ -1,0 +1,78 @@
+/* Header row */
+.custom-employee-table .ant-table-thead > tr > th {
+  background: var(--surface) !important;
+  color: var(--textSecondary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Body cells */
+.custom-employee-table .ant-table-tbody > tr > td {
+  background: var(--surface) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Hover state */
+.custom-employee-table .ant-table-tbody > tr:hover > td {
+  background: var(--surfaceHover) !important;
+}
+
+/* Actions column icons */
+.custom-employee-table .actions-cell button {
+  color: var(--textSecondary) !important;
+}
+
+/* Pagination */
+.custom-employee-table .ant-pagination-item a {
+  color: var(--textSecondary) !important;
+}
+.custom-employee-table .ant-pagination-item-active a {
+  color: var(--textPrimary) !important;
+}
+.custom-employee-table .ant-pagination-item-active {
+  border-color: var(--primary) !important;
+}
+
+/* Table borders */
+.custom-employee-table .ant-table {
+  border-color: var(--border) !important;
+}
+
+/* PAGINATION (inside custom-employee-table wrapper) */
+.custom-employee-table .employee-pagination {
+  margin: 12px 16px;
+}
+
+/* page number boxes */
+.custom-employee-table .employee-pagination .ant-pagination-item {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.custom-employee-table .employee-pagination .ant-pagination-item a {
+  color: var(--textSecondary) !important;
+}
+
+/* active page */
+.custom-employee-table .employee-pagination .ant-pagination-item-active {
+  border-color: var(--primary) !important;
+  background: var(--surface) !important;
+}
+
+.custom-employee-table .employee-pagination .ant-pagination-item-active a {
+  color: var(--textPrimary) !important;
+}
+
+/* prev/next arrows */
+.custom-employee-table .employee-pagination .ant-pagination-prev button,
+.custom-employee-table .employee-pagination .ant-pagination-next button {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--textSecondary) !important;
+}
+
+/* disabled arrows */
+.custom-employee-table .employee-pagination .ant-pagination-disabled button {
+  color: var(--textSecondary) !important;
+  opacity: 0.4;
+}
