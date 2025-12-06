@@ -77,7 +77,14 @@ export const AddEmployee: React.FC = () => {
       try {
         setLoadingTeams(true);
         const teamsData = await getTeams();
-        setTeams(Array.isArray(teamsData) ? teamsData : teamsData.data || []);
+
+        setTeams(
+          Array.isArray(teamsData)
+            ? teamsData
+            : Array.isArray(teamsData?.data)
+            ? teamsData.data
+            : []
+        );
       } catch (err) {
         console.error("Failed to fetch teams:", err);
         messageApi.warning("Could not load teams");
@@ -88,8 +95,13 @@ export const AddEmployee: React.FC = () => {
       try {
         setLoadingClients(true);
         const clientsData = await getClients();
+
         setClients(
-          Array.isArray(clientsData) ? clientsData : clientsData.data || []
+          Array.isArray(clientsData)
+            ? clientsData
+            : Array.isArray(clientsData?.data)
+            ? clientsData.data
+            : []
         );
       } catch (err) {
         console.error("Failed to fetch clients:", err);
