@@ -261,6 +261,7 @@ export const Employees: React.FC = () => {
       dataIndex: ["team", "name"],
       key: "team",
       width: 150,
+      ellipsis: true,
       render: (teamName: string | undefined, record: EmployeeRow) => (
         <span
           style={{
@@ -276,7 +277,8 @@ export const Employees: React.FC = () => {
       title: "Client",
       dataIndex: ["client", "name"],
       key: "client",
-      width: 150,
+      width: 165,
+      ellipsis: true,
       render: (clientName: string | undefined, record: EmployeeRow) => (
         <span
           style={{
