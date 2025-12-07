@@ -13,6 +13,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import EditTeam from "./pages/TeamDetails";
 import EditClient from "./pages/ClientDetails";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -43,7 +44,7 @@ export default function App() {
         <Route path="/clients" element={<Clients />} />
         <Route path="/clients/add" element={<AddClient />} />
         <Route path="/clients/:id" element={<EditClient />} />
-        <Route path="/settings" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
     </Routes>
   );
