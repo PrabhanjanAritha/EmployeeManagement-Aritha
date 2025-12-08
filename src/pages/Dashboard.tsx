@@ -82,7 +82,7 @@ export const Dashboard: React.FC = () => {
       </div>
     );
   }
-
+  console.log(localStorage.getItem("user"));
   return (
     <div className="flex flex-col w-full max-w-[1600px] mx-auto animate-fade-in">
       <h1
