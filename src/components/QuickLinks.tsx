@@ -1,8 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../theme/useTheme";
-
-export const QuickLinks: React.FC = () => {
+type QuickLinksProps = {
+  isEditable: boolean;
+};
+export const QuickLinks: React.FC<QuickLinksProps> = ({ isEditable }) => {
   const { palette } = useTheme();
   const navigate = useNavigate();
 
@@ -20,8 +22,12 @@ export const QuickLinks: React.FC = () => {
           style={{ backgroundColor: palette.primary, color: "white" }}
           className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors"
         >
-          <span className="material-symbols-outlined">person_add</span>
-          <span className="text-base font-semibold">Add Employee</span>
+          <span className="material-symbols-outlined">
+            {isEditable ? "person_add" : "visibility"}
+          </span>
+          <span className="text-base font-semibold">
+            {isEditable ? "Add Employee" : "View Employees"}
+          </span>
         </button>
 
         <button

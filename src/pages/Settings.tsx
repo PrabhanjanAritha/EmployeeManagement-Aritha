@@ -14,9 +14,16 @@ import {
   Tag,
   Space,
   Select,
+  Dropdown,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { getUsers, registerUser, updateUserStatus } from "../api/users";
+import type { MenuProps } from "antd";
+import {
+  getUsers,
+  registerUser,
+  updateUserStatus,
+  updateUserRole,
+} from "../api/users";
 
 interface User {
   id: number;
@@ -37,7 +44,7 @@ export const Settings: React.FC = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [messageApi, contextHolder] = message.useMessage();
-
+  const [roleInfo, setRoleInfo] = useState("");
   // Check if current user is admin
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -120,6 +127,18 @@ export const Settings: React.FC = () => {
     }
   };
 
+  // Handle role update
+  const handleRoleUpdate = async (userId: number, newRole: string) => {
+    try {
+      await updateUserRole(userId, newRole);
+      messageApi.success(`User role updated to ${newRole.toUpperCase()}`);
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to update user role:", error);
+      messageApi.error("Failed to update user role");
+    }
+  };
+
   // Table columns
   const columns: ColumnsType<User> = [
     {
@@ -133,7 +152,7 @@ export const Settings: React.FC = () => {
           </div>
           {email === "admin@arithaconsulting.com" && (
             <Tag color="gold" style={{ marginTop: 4 }}>
-              Admin
+              TN-Admin
             </Tag>
           )}
         </div>
@@ -143,12 +162,51 @@ export const Settings: React.FC = () => {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      width: 120,
-      render: (role: string) => (
-        <Tag color="blue" style={{ textTransform: "uppercase" }}>
-          {role}
-        </Tag>
-      ),
+      width: 150,
+      render: (role: string, record: User) => {
+        const isCurrentAdmin = record.email === "admin@arithaconsulting.com";
+
+        const menuItems: MenuProps["items"] = [
+          {
+            key: "hr",
+            label: "HR",
+            onClick: () => handleRoleUpdate(record.id, "hr"),
+            disabled: role === "hr" || isCurrentAdmin,
+          },
+          {
+            key: "admin",
+            label: "Admin",
+            onClick: () => handleRoleUpdate(record.id, "admin"),
+            disabled: role === "admin" || isCurrentAdmin,
+          },
+        ];
+
+        return (
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={["click"]}
+            disabled={isCurrentAdmin}
+          >
+            <Tag
+              color="blue"
+              style={{
+                textTransform: "uppercase",
+                cursor: isCurrentAdmin ? "default" : "pointer",
+              }}
+            >
+              {role}
+              {!isCurrentAdmin && (
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 14, marginLeft: 4 }}
+                >
+                  arrow_drop_down
+                </span>
+              )}
+            </Tag>
+          </Dropdown>
+        );
+      },
     },
     {
       title: "Status",
@@ -330,10 +388,36 @@ export const Settings: React.FC = () => {
             initialValue="hr"
             rules={[{ required: true, message: "Role is required" }]}
           >
-            <Select placeholder="Select role">
+            <Select
+              placeholder="Select role"
+              onChange={(value) => {
+                if (value === "admin") {
+                  setRoleInfo("Admin can edit the data.");
+                } else if (value === "hr") {
+                  setRoleInfo("HR can only view the data.");
+                } else {
+                  setRoleInfo("");
+                }
+              }}
+            >
               <Select.Option value="hr">HR</Select.Option>
               <Select.Option value="admin">Admin</Select.Option>
             </Select>
+
+            {roleInfo && (
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: "8px 12px",
+                  background: "#f0f5ff",
+                  border: "1px solid #adc6ff",
+                  borderRadius: 4,
+                  color: "#1d39c4",
+                }}
+              >
+                {roleInfo}
+              </div>
+            )}
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>

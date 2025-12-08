@@ -15,7 +15,6 @@ export async function register(email: string, password: string, role = "hr") {
   return res.data;
 }
 
-
 export type LoginPayload = {
   email: string;
   password: string;
@@ -23,12 +22,13 @@ export type LoginPayload = {
 
 export async function loginApi(payload: LoginPayload) {
   const res = await api.post("/auth/login", payload);
-
+  console.log(res.data);
   const { token, user } = res.data;
 
   // store token (and user if you want)
   localStorage.setItem("token", token);
   localStorage.setItem("user", JSON.stringify(user));
+  localStorage.setItem("role", user.role);
 
   return user;
 }

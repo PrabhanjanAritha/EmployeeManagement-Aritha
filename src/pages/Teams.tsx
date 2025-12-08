@@ -35,6 +35,8 @@ interface TeamRow {
 }
 
 export const Teams: React.FC = () => {
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
   const { palette } = useTheme();
   const navigate = useNavigate();
 
@@ -209,24 +211,42 @@ export const Teams: React.FC = () => {
       fixed: "right",
       width: 120,
       align: "center",
-      render: (_: any, record: TeamRow) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => navigate(`/teams/${record.id}`)}
-            style={{
-              color: palette.textSecondary,
-              fontSize: 14,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px",
-            }}
-            title={`View / Edit ${record.name}`}
-          >
-            ✏️
-          </button>
-        </div>
-      ),
+      render: (_: any, record: TeamRow) =>
+        isEditable ? (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => navigate(`/teams/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 14,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`Edit ${record.name}`}
+            >
+              ✏️
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => navigate(`/teams/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 14,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`View ${record.name}`}
+            >
+              <span className="material-symbols-outlined">visibility</span>
+            </button>
+          </div>
+        ),
     },
   ];
 
@@ -289,17 +309,19 @@ export const Teams: React.FC = () => {
             </button>
 
             {/* Add Team */}
-            <button
-              onClick={() => navigate("/teams/add")}
-              style={{
-                backgroundColor: palette.primary,
-                color: "#fff",
-              }}
-              className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
-            >
-              <span>+</span>
-              <span>Add Team</span>
-            </button>
+            {isEditable && (
+              <button
+                onClick={() => navigate("/teams/add")}
+                style={{
+                  backgroundColor: palette.primary,
+                  color: "#fff",
+                }}
+                className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
+              >
+                <span>+</span>
+                <span>Add Team</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

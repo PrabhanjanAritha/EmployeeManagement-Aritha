@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTheme } from "../theme/useTheme";
 
 interface SidebarProps {
@@ -12,12 +12,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
   onNavigate,
 }) => {
+  const [isTnAdmin] = useState(() => {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return false;
+
+    const user = JSON.parse(userStr);
+    return user.email === "admin@arithaconsulting.com";
+  });
+
   const navItems = [
     { id: "dashboard", icon: "dashboard", label: "Dashboard" },
     { id: "employees", icon: "group", label: "Employees" },
     { id: "teams", icon: "diversity_3", label: "Teams" },
     { id: "clients", icon: "business_center", label: "Clients" },
-    { id: "settings", icon: "settings", label: "Settings" },
+    ...(isTnAdmin
+      ? [{ id: "settings", icon: "settings", label: "Settings" }]
+      : []),
   ];
 
   const { isDark, palette } = useTheme();

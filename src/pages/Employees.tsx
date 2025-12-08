@@ -26,6 +26,8 @@ interface EmployeeRow {
 }
 
 export const Employees: React.FC = () => {
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
   const navigate = useNavigate();
   const { palette } = useTheme();
   const [modal, contextHolder] = Modal.useModal();
@@ -361,42 +363,60 @@ export const Employees: React.FC = () => {
       fixed: "right",
       align: "center",
       width: 100,
-      render: (_: any, record: EmployeeRow) => (
-        <div className="flex items-center gap-2 justify-center">
-          <button
-            onClick={() => navigate(`/employees/${record.id}`)}
-            style={{
-              color: palette.textSecondary,
-              fontSize: 16,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px",
-            }}
-            title={`Edit ${record.firstName} ${record.lastName}`}
-          >
-            ✏️
-          </button>
-          <button
-            onClick={() => handleDelete(record)}
-            style={{
-              color: record.active ? "#ff4d4f" : "#52c41a",
-              fontSize: 16,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px",
-            }}
-            title={
-              record.active
-                ? `Deactivate ${record.firstName} ${record.lastName}`
-                : `Activate ${record.firstName} ${record.lastName}`
-            }
-          >
-            {record.active ? "🗑️" : "✅"}
-          </button>
-        </div>
-      ),
+      render: (_: any, record: EmployeeRow) =>
+        isEditable ? (
+          <div className="flex items-center gap-2 justify-center">
+            <button
+              onClick={() => navigate(`/employees/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 16,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`Edit ${record.firstName} ${record.lastName}`}
+            >
+              ✏️
+            </button>
+            <button
+              onClick={() => handleDelete(record)}
+              style={{
+                color: record.active ? "#ff4d4f" : "#52c41a",
+                fontSize: 16,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={
+                record.active
+                  ? `Deactivate ${record.firstName} ${record.lastName}`
+                  : `Activate ${record.firstName} ${record.lastName}`
+              }
+            >
+              {record.active ? "🗑️" : "✅"}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 justify-center">
+            <button
+              onClick={() => navigate(`/employees/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 16,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`view ${record.firstName} ${record.lastName}`}
+            >
+              <span className="material-symbols-outlined">visibility</span>
+            </button>
+          </div>
+        ),
     },
   ];
 
@@ -487,17 +507,19 @@ export const Employees: React.FC = () => {
               <span>Filters</span>
             </button>
 
-            <button
-              onClick={() => navigate("/employees/add")}
-              style={{
-                backgroundColor: palette.primary,
-                color: "#fff",
-              }}
-              className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
-            >
-              <span>+</span>
-              <span>Add</span>
-            </button>
+            {isEditable && (
+              <button
+                onClick={() => navigate("/employees/add")}
+                style={{
+                  backgroundColor: palette.primary,
+                  color: "#fff",
+                }}
+                className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
+              >
+                <span>+</span>
+                <span>Add</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

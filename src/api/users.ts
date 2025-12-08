@@ -54,7 +54,15 @@ export const updateUserStatus = async (userId: number, active: boolean) => {
     throw error;
   }
 };
-
+export const updateUserRole = async (userId: number, role: string) => {
+  try {
+    const response = await api.patch(`/users/${userId}/role`, { role });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    throw error;
+  }
+};
 /**
  * Delete a user (admin only)
  */

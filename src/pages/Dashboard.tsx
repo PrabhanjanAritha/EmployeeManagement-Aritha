@@ -82,14 +82,19 @@ export const Dashboard: React.FC = () => {
       </div>
     );
   }
-  console.log(localStorage.getItem("user"));
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
+  const displayRole =
+    role.toLowerCase() === "hr"
+      ? "HR"
+      : role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
   return (
     <div className="flex flex-col w-full max-w-[1600px] mx-auto animate-fade-in">
       <h1
         style={{ color: palette.textPrimary }}
         className="tracking-light text-2xl md:text-[32px] font-bold leading-tight pb-3 pt-2 md:pt-6 transition-colors pl-2"
       >
-        Welcome back, Admin!
+        Welcome back, {displayRole}!
       </h1>
 
       {/* Stats Grid */}
@@ -111,7 +116,7 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-2">
         {/* Left Column (Links & Chart) */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <QuickLinks />
+          <QuickLinks isEditable={isEditable} />
           <RecentHiresChart />
         </div>
 

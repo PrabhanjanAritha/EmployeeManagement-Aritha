@@ -74,6 +74,8 @@ type FormValues = {
 };
 
 export const EditTeam: React.FC = () => {
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
   const { palette } = useTheme();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -382,51 +384,54 @@ export const EditTeam: React.FC = () => {
               className="rounded-xl p-6 border shadow-sm"
             >
               {/* Header */}
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2
-                    style={{
-                      color: palette.textPrimary_w,
-                      fontSize: 20,
-                      fontWeight: 600,
-                      margin: 0,
-                    }}
-                  >
-                    {isEditing ? "Edit Team" : team.name}
-                  </h2>
-                  <p
-                    style={{
-                      color: palette.textSecondary,
-                      fontSize: 14,
-                      margin: "8px 0 0 0",
-                    }}
-                  >
-                    {isEditing
-                      ? "Update team details and employee assignments"
-                      : team.title || "View team information"}
-                  </p>
-                </div>
-
-                {!isEditing && (
-                  <div className="flex gap-2">
-                    <Button
-                      type="primary"
-                      onClick={() => setIsEditing(true)}
+              {isEditable && (
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2
                       style={{
-                        backgroundColor: palette.primary,
+                        color: palette.textPrimary_w,
+                        fontSize: 20,
+                        fontWeight: 600,
+                        margin: 0,
                       }}
                     >
-                      <span className="material-symbols-outlined">edit</span>
-                      <span style={{ marginLeft: 8 }}>Edit</span>
-                    </Button>
-                    <Button danger onClick={handleDelete}>
-                      <span className="material-symbols-outlined">delete</span>
-                      <span style={{ marginLeft: 8 }}>Delete</span>
-                    </Button>
+                      {isEditing ? "Edit Team" : team.name}
+                    </h2>
+                    <p
+                      style={{
+                        color: palette.textSecondary,
+                        fontSize: 14,
+                        margin: "8px 0 0 0",
+                      }}
+                    >
+                      {isEditing
+                        ? "Update team details and employee assignments"
+                        : team.title || "View team information"}
+                    </p>
                   </div>
-                )}
-              </div>
 
+                  {!isEditing && (
+                    <div className="flex gap-2">
+                      <Button
+                        type="primary"
+                        onClick={() => setIsEditing(true)}
+                        style={{
+                          backgroundColor: palette.primary,
+                        }}
+                      >
+                        <span className="material-symbols-outlined">edit</span>
+                        <span style={{ marginLeft: 8 }}>Edit</span>
+                      </Button>
+                      <Button danger onClick={handleDelete}>
+                        <span className="material-symbols-outlined">
+                          delete
+                        </span>
+                        <span style={{ marginLeft: 8 }}>Delete</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* View Mode */}
               {!isEditing ? (
                 <div>

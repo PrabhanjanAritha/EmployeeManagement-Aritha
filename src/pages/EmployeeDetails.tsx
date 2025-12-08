@@ -72,6 +72,8 @@ type FormValues = {
 };
 
 export const EmployeeDetails: React.FC = () => {
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
   const { palette } = useTheme();
   const { id } = useParams<{ id: string }>();
   const isDark =
@@ -333,7 +335,7 @@ export const EmployeeDetails: React.FC = () => {
               </p>
             </div>
             <div>
-              {!isEditing ? (
+              {!isEditing && isEditable ? (
                 <Button
                   style={{ backgroundColor: palette.primary, color: "#fff" }}
                   className="px-2 py-1 rounded"
@@ -660,52 +662,55 @@ export const EmployeeDetails: React.FC = () => {
             </h3>
 
             {/* SMALL READ-ONLY DATE PILL */}
-            <div
-              style={{
-                backgroundColor: palette.surface_w,
-                border: `1px solid ${palette.border_w}`,
-                color: palette.textSecondary_w,
-                padding: "6px 12px",
-                fontSize: 13,
-                borderRadius: 8,
-                width: "fit-content",
-                marginBottom: 12,
-              }}
-            >
-              Note Date: {noteDate?.format("MM/DD/YYYY")}
-            </div>
+            {isEditable && (
+              <>
+                <div
+                  style={{
+                    backgroundColor: palette.surface_w,
+                    border: `1px solid ${palette.border_w}`,
+                    color: palette.textSecondary_w,
+                    padding: "6px 12px",
+                    fontSize: 13,
+                    borderRadius: 8,
+                    width: "fit-content",
+                    marginBottom: 12,
+                  }}
+                >
+                  Note Date: {noteDate?.format("MM/DD/YYYY")}
+                </div>
 
-            {/* FULL WIDTH EDITOR */}
-            <div
-              style={{
-                borderRadius: 8,
-                border: `1px solid ${palette.border_w}`,
-                overflow: "hidden",
-                backgroundColor: palette.surface_w,
-                marginBottom: 16,
-              }}
-            >
-              <DefaultEditor
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Add a new note..."
-              />
-            </div>
+                {/* FULL WIDTH EDITOR */}
+                <div
+                  style={{
+                    borderRadius: 8,
+                    border: `1px solid ${palette.border_w}`,
+                    overflow: "hidden",
+                    backgroundColor: palette.surface_w,
+                    marginBottom: 16,
+                  }}
+                >
+                  <DefaultEditor
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="Add a new note..."
+                  />
+                </div>
 
-            <div className="flex justify-end mb-4">
-              <Button
-                type="primary"
-                onClick={onAddNote}
-                loading={noteLoading}
-                style={{
-                  backgroundColor: palette.primary,
-                  borderColor: palette.primary,
-                }}
-              >
-                + Add Note
-              </Button>
-            </div>
-
+                <div className="flex justify-end mb-4">
+                  <Button
+                    type="primary"
+                    onClick={onAddNote}
+                    loading={noteLoading}
+                    style={{
+                      backgroundColor: palette.primary,
+                      borderColor: palette.primary,
+                    }}
+                  >
+                    + Add Note
+                  </Button>
+                </div>
+              </>
+            )}
             {/* Notes List */}
             <List
               itemLayout="vertical"

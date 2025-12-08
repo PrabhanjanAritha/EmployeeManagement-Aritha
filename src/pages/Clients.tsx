@@ -32,6 +32,8 @@ interface ClientRow {
 }
 
 export const Clients: React.FC = () => {
+  const role = localStorage.getItem("role") ?? "";
+  const isEditable = role.toLowerCase() === "admin";
   const { palette } = useTheme();
   const navigate = useNavigate();
 
@@ -216,24 +218,42 @@ export const Clients: React.FC = () => {
       fixed: "right",
       width: 120,
       align: "center",
-      render: (_: any, record: ClientRow) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => navigate(`/clients/${record.id}`)}
-            style={{
-              color: palette.textSecondary,
-              fontSize: 14,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px",
-            }}
-            title={`View / Edit ${record.name}`}
-          >
-            ✏️
-          </button>
-        </div>
-      ),
+      render: (_: any, record: ClientRow) =>
+        isEditable ? (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => navigate(`/clients/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 14,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`Edit ${record.name}`}
+            >
+              ✏️
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => navigate(`/clients/${record.id}`)}
+              style={{
+                color: palette.textSecondary,
+                fontSize: 14,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+              }}
+              title={`View ${record.name}`}
+            >
+              <span className="material-symbols-outlined">visibility</span>
+            </button>
+          </div>
+        ),
     },
   ];
 
@@ -296,17 +316,19 @@ export const Clients: React.FC = () => {
             </button>
 
             {/* Add Client */}
-            <button
-              onClick={() => navigate("/clients/add")}
-              style={{
-                backgroundColor: palette.primary,
-                color: "#fff",
-              }}
-              className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
-            >
-              <span>+</span>
-              <span>Add Client</span>
-            </button>
+            {isEditable && (
+              <button
+                onClick={() => navigate("/clients/add")}
+                style={{
+                  backgroundColor: palette.primary,
+                  color: "#fff",
+                }}
+                className="px-4 py-2 rounded-lg text-sm flex items-center gap-1 whitespace-nowrap"
+              >
+                <span>+</span>
+                <span>Add Client</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
