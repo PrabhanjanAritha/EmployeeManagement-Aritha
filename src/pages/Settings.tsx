@@ -306,21 +306,44 @@ export const Settings: React.FC = () => {
           </Button>
         </div>
 
-        {/* Users Table */}
-        <Table
-          columns={columns}
-          dataSource={users}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-          }}
+        <div
           style={{
             backgroundColor: palette.surface,
+            borderColor: palette.border,
           }}
-        />
+          className="rounded-lg border overflow-hidden"
+        >
+          <div
+            className="custom-employee-table"
+            style={
+              {
+                "--surface": palette.surface,
+                "--surfaceHover": palette.surface,
+                "--textPrimary": palette.textPrimary,
+                "--textSecondary": palette.textSecondary,
+                "--border": palette.border,
+                "--primary": palette.primary,
+              } as React.CSSProperties
+            }
+          >
+            <Table
+              size="small"
+              columns={columns}
+              dataSource={users}
+              rowKey="id"
+              loading={loading}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                pageSizeOptions: ["10", "20", "50"],
+                className: "employee-pagination",
+              }}
+              style={{
+                backgroundColor: palette.surface,
+              }}
+            />
+          </div>
+        </div>
       </Card>
 
       {/* Add User Modal */}

@@ -13,6 +13,10 @@ import {
   Select,
   Switch,
   Breadcrumb,
+  Tabs,
+  Descriptions,
+  Card,
+  Spin,
 } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { useTheme } from "../theme/useTheme";
@@ -21,7 +25,6 @@ import { getEmployeeNotes, addEmployeeNote } from "../api/notes";
 
 import { DefaultEditor } from "react-simple-wysiwyg";
 import { StyleProvider } from "@ant-design/cssinjs";
-// import "react-simple-wysiwyg/dist/styles.css";
 
 const { Option } = Select;
 
@@ -30,7 +33,6 @@ type Employee = {
   employeeCode?: string | null;
   firstName: string;
   lastName: string;
-  teamName?: string | null;
   dateOfJoining?: string | null;
   dateOfBirth?: string | null;
   experienceYearsAtJoining?: number | null;
@@ -41,11 +43,27 @@ type Employee = {
   gender?: string | null;
   title?: string | null;
   active?: boolean | null;
+  currentExperience?: {
+    years: number;
+    months: number;
+    totalMonths: number;
+    formatted: string;
+    experienceAtJoining: {
+      years: number;
+      months: number;
+      formatted: string;
+    };
+    experienceSinceJoining: {
+      years: number;
+      months: number;
+      formatted: string;
+    };
+  } | null;
 };
 
 type EmployeeNote = {
   id: number;
-  content: string; // HTML
+  content: string;
   noteDate: string;
   createdAt: string;
   author: {
@@ -56,7 +74,6 @@ type EmployeeNote = {
 
 type FormValues = {
   employeeId?: string;
-  team?: string;
   firstName: string;
   lastName: string;
   dob?: Dayjs | null;
@@ -80,27 +97,20 @@ export const EmployeeDetails: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (palette as any)?.mode === "dark" || (palette as any)?.isDark || false;
 
-  const pageBg = isDark ? palette.background ?? "#020617" : "#f3f4f6"; // subtle gray for light
-  const cardBg = isDark ? palette.surface ?? "#020617" : "#f9fafb"; // off-white for light
+  const pageBg = isDark ? palette.background ?? "#020617" : "#f3f4f6";
+  const cardBg = isDark ? palette.surface ?? "#020617" : "#f9fafb";
   const employeeId = Number(id);
   const navigate = useNavigate();
   const [form] = Form.useForm<FormValues>();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [notes, setNotes] = useState<EmployeeNote[]>([]);
   const [noteDate, setNoteDate] = useState<Dayjs | null>(dayjs());
-  const [noteText, setNoteText] = useState(""); // HTML
+  const [noteText, setNoteText] = useState("");
   const [loading, setLoading] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const readOnlyFieldStyle = !isEditing
-    ? {
-        backgroundColor: "transparent",
-        color: palette.textPrimary,
-        opacity: 1,
-        cursor: "default",
-      }
-    : undefined;
+
   useEffect(() => {
     if (!employeeId) return;
 
@@ -119,7 +129,6 @@ export const EmployeeDetails: React.FC = () => {
 
         form.setFieldsValue({
           employeeId: emp.employeeCode || "",
-          team: emp.teamName || "",
           firstName: emp.firstName,
           lastName: emp.lastName,
           dob: emp.dateOfBirth ? dayjs(emp.dateOfBirth) : null,
@@ -152,7 +161,6 @@ export const EmployeeDetails: React.FC = () => {
   }, [employeeId]);
 
   const onAddNote = async () => {
-    // simple content check: strip tags
     const plainText = noteText.replace(/<[^>]+>/g, "").trim();
     if (!plainText) {
       messageApi.warning("Please enter a note");
@@ -163,7 +171,7 @@ export const EmployeeDetails: React.FC = () => {
       setNoteLoading(true);
 
       const payload = {
-        content: noteText, // HTML from editor
+        content: noteText,
         noteDate: noteDate ? noteDate.toISOString() : null,
       };
 
@@ -207,8 +215,7 @@ export const EmployeeDetails: React.FC = () => {
         onChange={onChange}
         style={{
           width: "100%",
-          paddingRight: 50, // space for suffix
-          ...(readOnlyFieldStyle || {}),
+          paddingRight: 50,
         }}
       />
       <span
@@ -232,7 +239,6 @@ export const EmployeeDetails: React.FC = () => {
 
       const payload = {
         employeeId: values.employeeId,
-        team: values.team,
         firstName: values.firstName,
         lastName: values.lastName,
         personalEmail: values.personalEmail,
@@ -247,8 +253,15 @@ export const EmployeeDetails: React.FC = () => {
         active: values.active,
       };
 
-      await updateEmployee(employeeId, payload);
+      const updatedEmp = await updateEmployee(employeeId, payload);
 
+      // Update local state with the response
+      const emp: Employee =
+        "success" in updatedEmp && updatedEmp.success
+          ? updatedEmp.data
+          : (updatedEmp as unknown as Employee);
+
+      setEmployee(emp);
       messageApi.success("Employee updated successfully");
       setIsEditing(false);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -265,7 +278,6 @@ export const EmployeeDetails: React.FC = () => {
     if (employee) {
       form.setFieldsValue({
         employeeId: employee.employeeCode || "",
-        team: employee.teamName || "",
         firstName: employee.firstName,
         lastName: employee.lastName,
         dob: employee.dateOfBirth ? dayjs(employee.dateOfBirth) : null,
@@ -282,6 +294,21 @@ export const EmployeeDetails: React.FC = () => {
     }
     setIsEditing(false);
   };
+
+  if (loading && !employee) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (!employee && !loading) {
     return (
@@ -304,462 +331,600 @@ export const EmployeeDetails: React.FC = () => {
     >
       {contextHolder}
 
-      {/* breadcrumb */}
       <Breadcrumb
         items={[
           { title: "Employees", onClick: () => navigate("/employees") },
-          { title: "View Employee" },
+          { title: fullName || "View Employee" },
         ]}
         style={{ marginBottom: 24, cursor: "pointer" }}
       />
 
       <StyleProvider autoClear>
-        <div
+        <Tabs
+          defaultActiveKey="details"
           style={{
             backgroundColor: cardBg,
-            borderColor: palette.border,
+            borderRadius: 12,
+            padding: 16,
           }}
-          className="rounded-xl p-6 border shadow-sm"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1
-                style={{ color: palette.textPrimary_w }}
-                className="text-2xl font-bold"
-              >
-                {fullName || "Employee Details"}
-              </h1>
-              <p style={{ color: palette.textSecondary }}>
-                Details for employee{" "}
-                {employee?.employeeCode || `#${employee?.id}`}
-              </p>
-            </div>
-            <div>
-              {!isEditing && isEditable ? (
-                <Button
-                  style={{ backgroundColor: palette.primary, color: "#fff" }}
-                  className="px-2 py-1 rounded"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit Employee
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Editable form section */}
-          {/* Editable form section */}
-          <div
-            style={{
-              // backgroundColor: palette.surface,
-              borderColor: palette.border,
-            }}
-            className="rounded-xl p-6 border shadow-sm mb-6"
-          >
-            <Form<FormValues> form={form} layout="vertical" onFinish={onFinish}>
-              <Row gutter={[16, 16]}>
-                {/* Employee ID */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="employeeId"
-                    label="Employee ID"
-                    rules={[
-                      { required: true, message: "Employee ID is required" },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Team */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item name="team" label="Team">
-                    <Select
-                      placeholder="Select a team"
-                      disabled={!isEditing}
-                      style={readOnlyFieldStyle}
-                    >
-                      <Option value="Engineering">Engineering</Option>
-                      <Option value="Design">Design</Option>
-                      <Option value="Marketing">Marketing</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                {/* First Name */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="firstName"
-                    label="First Name"
-                    rules={[
-                      { required: true, message: "First name is required" },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Last Name */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="lastName"
-                    label="Last Name"
-                    rules={[
-                      { required: true, message: "Last name is required" },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Date of Birth */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="dob"
-                    label="Date of Birth"
-                    rules={[
-                      { required: true, message: "Date of Birth is required" },
-                    ]}
-                  >
-                    <DatePicker
-                      format="MM/DD/YYYY"
-                      disabled={!isEditing}
-                      style={{
-                        width: "100%",
-                        ...(readOnlyFieldStyle || {}),
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* Date of Joining */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="doj"
-                    label="Date of Joining"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Date of Joining is required",
-                      },
-                    ]}
-                  >
-                    <DatePicker
-                      format="MM/DD/YYYY"
-                      disabled={!isEditing}
-                      style={{
-                        width: "100%",
-                        ...(readOnlyFieldStyle || {}),
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* Personal Email */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="personalEmail"
-                    label="Personal Email"
-                    rules={[
-                      { required: true, message: "Personal email is required" },
-                      { type: "email", message: "Enter a valid email" },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Phone */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="phone"
-                    label="Phone Number"
-                    rules={[
-                      {
-                        pattern: /^\+?[0-9\- ]{7,15}$/,
-                        message: "Enter a valid phone",
-                      },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Company Email */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="companyEmail"
-                    label="Company Email"
-                    rules={[
-                      { type: "email", message: "Enter a valid company email" },
-                    ]}
-                  >
-                    <Input disabled={!isEditing} style={readOnlyFieldStyle} />
-                  </Form.Item>
-                </Col>
-
-                {/* Job Title */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item name="title" label="Job Title">
-                    <Input
-                      disabled={!isEditing}
-                      placeholder="e.g., Software Engineer"
-                      style={readOnlyFieldStyle}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* Gender */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item name="gender" label="Gender">
-                    <Select
-                      placeholder="Select gender"
-                      disabled={!isEditing}
-                      style={readOnlyFieldStyle}
-                    >
-                      <Option value="Male">Male</Option>
-                      <Option value="Female">Female</Option>
-                      <Option value="Other">Other</Option>
-                      <Option value="Prefer not to say">
-                        Prefer not to say
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                {/* Status */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item
-                    name="active"
-                    label="Status"
-                    valuePropName="checked"
-                  >
-                    <Switch
-                      checkedChildren="Active"
-                      unCheckedChildren="Inactive"
-                      disabled={!isEditing}
-                      style={{
-                        backgroundColor: form.getFieldValue("active")
-                          ? palette.primary
-                          : "#999",
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* Experience While Joining */}
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Experience While Joining">
-                    <Row gutter={8} align="middle">
-                      <Col xs={12}>
-                        <Form.Item name="experienceYears" noStyle>
-                          <SuffixInput
-                            suffix="years"
-                            disabled={!isEditing}
-                            // value + onChange are handled by Form
-                          />
-                        </Form.Item>
-                      </Col>
-
-                      <Col xs={12}>
-                        <Form.Item name="experienceMonths" noStyle>
-                          <SuffixInput suffix="months" disabled={!isEditing} />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Current Experience">
-                    <Row gutter={8} align="middle">
-                      <Col xs={12}>
-                        <SuffixInput
-                          suffix="years"
-                          disabled={!isEditing}
-                          // value + onChange are handled by Form
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <SuffixInput suffix="months" disabled={!isEditing} />
-                      </Col>
-                    </Row>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              {isEditing && (
-                <div className="mt-6 flex justify-end gap-3">
-                  <Button
-                    color="danger"
-                    variant="dashed"
-                    disabled
-                    onClick={handleCancelEdit}
+          {/* Details Tab */}
+          <Tabs.TabPane tab="Employee Details" key="details">
+            <div
+              style={{
+                backgroundColor: cardBg,
+                borderColor: palette.border,
+              }}
+              className="rounded-xl p-6 border shadow-sm"
+            >
+              {/* Header */}
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2
                     style={{
-                      // border: `1px solid ${palette.border_w}`,
-                      background: "transparent",
                       color: palette.textPrimary_w,
+                      fontSize: 20,
+                      fontWeight: 600,
+                      margin: 0,
                     }}
                   >
-                    <span className="material-symbols-outlined">delete</span>
-                    Delete
-                  </Button>
-                  <Button
-                    type="default"
-                    onClick={handleCancelEdit}
+                    {isEditing ? "Edit Employee" : fullName}
+                  </h2>
+                  <p
                     style={{
-                      border: `1px solid ${palette.border_w}`,
-                      background: "transparent",
-                      color: palette.textPrimary_w,
+                      color: palette.textSecondary,
+                      fontSize: 14,
+                      margin: "8px 0 0 0",
                     }}
                   >
-                    <span className="material-symbols-outlined">close</span>
-                    Cancel
-                  </Button>
+                    {isEditing
+                      ? "Update employee information"
+                      : `Employee ${
+                          employee?.employeeCode || `#${employee?.id}`
+                        }`}
+                  </p>
+                </div>
 
-                  <Button
-                    type="default"
-                    onClick={() => form.resetFields()}
-                    style={{
-                      border: `1px solid ${palette.border_w}`,
-                      background: "transparent",
-                      color: palette.textPrimary_w,
-                    }}
-                  >
-                    <span className="material-symbols-outlined">refresh</span>
-                    Reset
-                  </Button>
-
+                {!isEditing && isEditable && (
                   <Button
                     type="primary"
-                    htmlType="submit"
-                    loading={loading}
+                    onClick={() => setIsEditing(true)}
                     style={{
                       backgroundColor: palette.primary,
-                      borderColor: palette.primary,
                     }}
                   >
                     <span className="material-symbols-outlined">edit</span>
-                    Update
+                    <span style={{ marginLeft: 8 }}>Edit</span>
                   </Button>
-                </div>
-              )}
-            </Form>
-          </div>
+                )}
+              </div>
 
-          {/* Notes section */}
-          <div
-            style={{
-              // backgroundColor: palette.surface,
-              borderColor: palette.border,
-            }}
-            className="rounded-xl p-6 border shadow-sm"
-          >
-            <h3
-              style={{ color: palette.textPrimary_w }}
-              className="text-lg font-semibold mb-3"
-            >
-              Notes
-            </h3>
-
-            {/* SMALL READ-ONLY DATE PILL */}
-            {isEditable && (
-              <>
-                <div
-                  style={{
-                    backgroundColor: palette.surface_w,
-                    border: `1px solid ${palette.border_w}`,
-                    color: palette.textSecondary_w,
-                    padding: "6px 12px",
-                    fontSize: 13,
-                    borderRadius: 8,
-                    width: "fit-content",
-                    marginBottom: 12,
-                  }}
-                >
-                  Note Date: {noteDate?.format("MM/DD/YYYY")}
-                </div>
-
-                {/* FULL WIDTH EDITOR */}
-                <div
-                  style={{
-                    borderRadius: 8,
-                    border: `1px solid ${palette.border_w}`,
-                    overflow: "hidden",
-                    backgroundColor: palette.surface_w,
-                    marginBottom: 16,
-                  }}
-                >
-                  <DefaultEditor
-                    value={noteText}
-                    onChange={(e) => setNoteText(e.target.value)}
-                    placeholder="Add a new note..."
-                  />
-                </div>
-
-                <div className="flex justify-end mb-4">
-                  <Button
-                    type="primary"
-                    onClick={onAddNote}
-                    loading={noteLoading}
+              {/* View Mode */}
+              {!isEditing ? (
+                <div>
+                  <Descriptions
+                    bordered
+                    column={{ xs: 1, sm: 2, md: 3 }}
                     style={{
-                      backgroundColor: palette.primary,
-                      borderColor: palette.primary,
+                      backgroundColor: palette.surface,
                     }}
                   >
-                    + Add Note
-                  </Button>
+                    <Descriptions.Item label="Employee ID">
+                      {employee?.employeeCode || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="First Name">
+                      {employee?.firstName}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Last Name">
+                      {employee?.lastName}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Gender">
+                      {employee?.gender || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date of Birth">
+                      {employee?.dateOfBirth
+                        ? dayjs(employee.dateOfBirth).format("MM/DD/YYYY")
+                        : "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date of Joining">
+                      {employee?.dateOfJoining
+                        ? dayjs(employee.dateOfJoining).format("MM/DD/YYYY")
+                        : "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Job Title">
+                      {employee?.title || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Company Email">
+                      {employee?.companyEmail || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Personal Email">
+                      {employee?.personalEmail || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Phone Number">
+                      {employee?.phone || "-"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Status">
+                      {employee?.active ? (
+                        <span style={{ color: "#52c41a" }}>Active</span>
+                      ) : (
+                        <span style={{ color: "#ff4d4f" }}>Inactive</span>
+                      )}
+                    </Descriptions.Item>
+                  </Descriptions>
+
+                  {/* Experience Section */}
+                  <div className="mt-6">
+                    <h3
+                      style={{
+                        color: palette.textPrimary_w,
+                        fontSize: 16,
+                        fontWeight: 600,
+                        marginBottom: 16,
+                      }}
+                    >
+                      Experience Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card
+                        size="small"
+                        title="Experience at Joining"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 24,
+                            fontWeight: 600,
+                            color: palette.primary,
+                          }}
+                        >
+                          {employee?.currentExperience?.experienceAtJoining
+                            ?.formatted || "0y 0m"}
+                        </div>
+                      </Card>
+
+                      <Card
+                        size="small"
+                        title="Experience Since Joining"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 24,
+                            fontWeight: 600,
+                            color: palette.primary,
+                          }}
+                        >
+                          {employee?.currentExperience?.experienceSinceJoining
+                            ?.formatted || "0y 0m"}
+                        </div>
+                      </Card>
+
+                      <Card
+                        size="small"
+                        title="Total Current Experience"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 24,
+                            fontWeight: 600,
+                            color: palette.primary,
+                          }}
+                        >
+                          {employee?.currentExperience?.formatted || "0y 0m"}
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
                 </div>
-              </>
-            )}
-            {/* Notes List */}
-            <List
-              itemLayout="vertical"
-              dataSource={notes}
-              locale={{ emptyText: "No notes yet" }}
-              renderItem={(note) => (
-                <List.Item
-                  style={{
-                    borderRadius: 8,
-                    border: `1px solid ${palette.border}`,
-                    marginBottom: 8,
-                    padding: 12,
-                  }}
+              ) : (
+                /* Edit Mode */
+                <Form<FormValues>
+                  form={form}
+                  layout="vertical"
+                  onFinish={onFinish}
                 >
+                  <Row gutter={[16, 16]}>
+                    {/* Employee ID */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="employeeId"
+                        label="Employee ID"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Employee ID is required",
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* First Name */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="firstName"
+                        label="First Name"
+                        rules={[
+                          { required: true, message: "First name is required" },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Last Name */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="lastName"
+                        label="Last Name"
+                        rules={[
+                          { required: true, message: "Last name is required" },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Gender */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item name="gender" label="Gender">
+                        <Select placeholder="Select gender">
+                          <Option value="Male">Male</Option>
+                          <Option value="Female">Female</Option>
+                          <Option value="Other">Other</Option>
+                          <Option value="Prefer not to say">
+                            Prefer not to say
+                          </Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+
+                    {/* Date of Birth */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="dob"
+                        label="Date of Birth"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Date of Birth is required",
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          format="MM/DD/YYYY"
+                          style={{ width: "100%" }}
+                        />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Date of Joining */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="doj"
+                        label="Date of Joining"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Date of Joining is required",
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          format="MM/DD/YYYY"
+                          style={{ width: "100%" }}
+                        />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Job Title */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item name="title" label="Job Title">
+                        <Input placeholder="e.g., Software Engineer" />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Company Email */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="companyEmail"
+                        label="Company Email"
+                        rules={[
+                          {
+                            type: "email",
+                            message: "Enter a valid company email",
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Personal Email */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="personalEmail"
+                        label="Personal Email"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Personal email is required",
+                          },
+                          { type: "email", message: "Enter a valid email" },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Phone */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="phone"
+                        label="Phone Number"
+                        rules={[
+                          {
+                            pattern: /^\+?[0-9\- ]{7,15}$/,
+                            message: "Enter a valid phone",
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+
+                    {/* Experience While Joining */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item label="Experience While Joining">
+                        <Row gutter={8} align="middle">
+                          <Col xs={12}>
+                            <Form.Item name="experienceYears" noStyle>
+                              <SuffixInput suffix="years" />
+                            </Form.Item>
+                          </Col>
+
+                          <Col xs={12}>
+                            <Form.Item name="experienceMonths" noStyle>
+                              <SuffixInput suffix="months" />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </Form.Item>
+                    </Col>
+
+                    {/* Current Experience (Read-only) */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item label="Current Experience">
+                        <Row gutter={8} align="middle">
+                          <Col xs={12}>
+                            <SuffixInput
+                              suffix="years"
+                              disabled={true}
+                              value={employee?.currentExperience?.years || 0}
+                            />
+                          </Col>
+                          <Col xs={12}>
+                            <SuffixInput
+                              suffix="months"
+                              disabled={true}
+                              value={employee?.currentExperience?.months || 0}
+                            />
+                          </Col>
+                        </Row>
+                      </Form.Item>
+                    </Col>
+
+                    {/* Status */}
+                    <Col xs={24} sm={12} md={8}>
+                      <Form.Item
+                        name="active"
+                        label="Status"
+                        valuePropName="checked"
+                      >
+                        <Switch
+                          checkedChildren="Active"
+                          unCheckedChildren="Inactive"
+                          style={{
+                            backgroundColor: form.getFieldValue("active")
+                              ? palette.primary
+                              : "#999",
+                          }}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  {/* Action Buttons */}
+                  <div className="mt-6 flex justify-end gap-3">
+                    <Button
+                      color="danger"
+                      variant="dashed"
+                      disabled
+                      style={{
+                        background: "transparent",
+                        color: palette.textPrimary_w,
+                      }}
+                    >
+                      <span className="material-symbols-outlined">delete</span>
+                      Delete
+                    </Button>
+                    <Button
+                      type="default"
+                      onClick={handleCancelEdit}
+                      style={{
+                        border: `1px solid ${palette.border_w}`,
+                        background: "transparent",
+                        color: palette.textPrimary_w,
+                      }}
+                    >
+                      <span className="material-symbols-outlined">close</span>
+                      Cancel
+                    </Button>
+
+                    <Button
+                      type="default"
+                      onClick={() => form.resetFields()}
+                      style={{
+                        border: `1px solid ${palette.border_w}`,
+                        background: "transparent",
+                        color: palette.textPrimary_w,
+                      }}
+                    >
+                      <span className="material-symbols-outlined">refresh</span>
+                      Reset
+                    </Button>
+
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={loading}
+                      style={{
+                        backgroundColor: palette.primary,
+                        borderColor: palette.primary,
+                      }}
+                    >
+                      <span className="material-symbols-outlined">save</span>
+                      <span style={{ marginLeft: 8 }}>Save Changes</span>
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </div>
+          </Tabs.TabPane>
+
+          {/* Notes Tab */}
+          <Tabs.TabPane
+            // tab="Notes (`${client._count?.teams || 0})"
+            tab={`Notes (${notes.length || 0})`}
+            key="notes"
+          >
+            <div
+              style={{
+                backgroundColor: cardBg,
+                borderColor: palette.border,
+              }}
+              className="rounded-xl p-6 border shadow-sm"
+            >
+              <h3
+                style={{ color: palette.textPrimary_w }}
+                className="text-lg font-semibold mb-4"
+              >
+                Employee Notes
+              </h3>
+
+              {isEditable && (
+                <>
+                  {/* Date Pill */}
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 4,
+                      backgroundColor: palette.surface_w,
+                      border: `1px solid ${palette.border_w}`,
+                      color: palette.textSecondary_w,
+                      padding: "6px 12px",
+                      fontSize: 13,
+                      borderRadius: 8,
+                      width: "fit-content",
+                      marginBottom: 12,
                     }}
                   >
-                    <span
-                      style={{
-                        color: palette.textSecondary_w,
-                        fontSize: 12,
-                      }}
-                    >
-                      {new Date(note.noteDate).toLocaleDateString()}
-                    </span>
-                    <span
-                      style={{
-                        color: palette.textSecondary_w,
-                        fontSize: 12,
-                      }}
-                    >
-                      Added by {note.author?.email ?? "Unknown"}
-                    </span>
+                    Note Date: {noteDate?.format("MM/DD/YYYY")}
                   </div>
 
-                  {/* Render HTML */}
+                  {/* Editor */}
                   <div
-                    style={{ color: palette.textPrimary_w, fontSize: 14 }}
-                    dangerouslySetInnerHTML={{ __html: note.content }}
-                  />
-                </List.Item>
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${palette.border_w}`,
+                      overflow: "hidden",
+                      backgroundColor: palette.surface_w,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <DefaultEditor
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="Add a new note..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end mb-4">
+                    <Button
+                      type="primary"
+                      onClick={onAddNote}
+                      loading={noteLoading}
+                      style={{
+                        backgroundColor: palette.primary,
+                        borderColor: palette.primary,
+                      }}
+                    >
+                      <span className="material-symbols-outlined">add</span>
+                      <span style={{ marginLeft: 8 }}>Add Note</span>
+                    </Button>
+                  </div>
+                </>
               )}
-            />
-          </div>
-        </div>
+
+              {/* Notes List */}
+              <List
+                itemLayout="vertical"
+                dataSource={notes}
+                locale={{ emptyText: "No notes yet" }}
+                renderItem={(note) => (
+                  <List.Item
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${palette.border}`,
+                      marginBottom: 8,
+                      padding: 12,
+                      backgroundColor: palette.surface,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: palette.textSecondary_w,
+                          fontSize: 12,
+                        }}
+                      >
+                        {new Date(note.noteDate).toLocaleDateString()}
+                      </span>
+                      <span
+                        style={{
+                          color: palette.textSecondary_w,
+                          fontSize: 12,
+                        }}
+                      >
+                        Added by {note.author?.email ?? "Unknown"}
+                      </span>
+                    </div>
+
+                    <div
+                      style={{ color: palette.textPrimary_w, fontSize: 14 }}
+                      dangerouslySetInnerHTML={{ __html: note.content }}
+                    />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </Tabs.TabPane>
+        </Tabs>
       </StyleProvider>
     </div>
   );

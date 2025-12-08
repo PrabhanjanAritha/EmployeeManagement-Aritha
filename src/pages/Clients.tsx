@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -43,17 +43,26 @@ export const Clients: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Fetch all clients
-  const fetchClients = async () => {
+  // Feature flag: hide Filters button when false
+  const showFilters = false;
+
+  // debounce ref for search
+  const searchDebounceRef = useRef<number | null>(null);
+
+  // Fetch clients - accepts optional params (for future backend integration)
+  const fetchClients = async (params?: { search?: string }) => {
     try {
       setLoading(true);
 
-      const response = await getClients();
+      // If your getClients helper accepts an options object that it serializes to query
+      // (e.g. getClients({ search: 'foo' })), this will work. If your helper expects a string
+      // url, adapt accordingly.
+      const resp = await getClients(params || {});
 
-      if (response && typeof response === "object" && "success" in response) {
-        setClients((response as any).data || []);
+      if (resp && typeof resp === "object" && "success" in resp) {
+        setClients((resp as any).data || []);
       } else {
-        setClients(Array.isArray(response) ? response : []);
+        setClients(Array.isArray(resp) ? resp : []);
       }
     } catch (err) {
       console.error("Failed to fetch clients", err);
@@ -64,11 +73,34 @@ export const Clients: React.FC = () => {
     }
   };
 
+  // Initial load
   useEffect(() => {
     fetchClients();
   }, []);
 
-  // Apply search filter locally
+  // Debounced search effect (ready for backend integration)
+  useEffect(() => {
+    if (searchDebounceRef.current)
+      window.clearTimeout(searchDebounceRef.current);
+
+    const q = searchTerm?.trim();
+
+    if (q && q.length > 0) {
+      searchDebounceRef.current = window.setTimeout(() => {
+        fetchClients({ search: q });
+      }, 350);
+    } else {
+      // empty search - fetch all
+      fetchClients();
+    }
+
+    return () => {
+      if (searchDebounceRef.current)
+        window.clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchTerm]);
+
+  // Apply search filter locally as a fallback / UX improvement while server search isn't wired
   const filteredClients = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
 
@@ -298,22 +330,24 @@ export const Clients: React.FC = () => {
               className="p-2 rounded-md text-sm min-w-[220px]"
             />
 
-            {/* Filters toggle */}
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((prev) => !prev)}
-              style={{
-                border: `1px solid ${palette.border}`,
-                backgroundColor: filtersOpen
-                  ? palette.primary
-                  : palette.surface,
-                color: filtersOpen ? "#fff" : palette.textPrimary,
-              }}
-              className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
-            >
-              <span>⚙️</span>
-              <span>Filters</span>
-            </button>
+            {/* Filters toggle (hidden when showFilters=false) */}
+            {showFilters && (
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                style={{
+                  border: `1px solid ${palette.border}`,
+                  backgroundColor: filtersOpen
+                    ? palette.primary
+                    : palette.surface,
+                  color: filtersOpen ? "#fff" : palette.textPrimary,
+                }}
+                className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
+              >
+                <span>⚙️</span>
+                <span>Filters</span>
+              </button>
+            )}
 
             {/* Add Client */}
             {isEditable && (
@@ -374,6 +408,8 @@ export const Clients: React.FC = () => {
               onClick={() => {
                 // Clear filters when implemented
                 setSearchTerm("");
+                // re-fetch all
+                fetchClients();
               }}
               style={{
                 color: palette.textSecondary,

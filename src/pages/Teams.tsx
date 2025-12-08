@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, message } from "antd";
+import { Table, message, Badge } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTheme } from "../theme/useTheme";
 import { getTeams } from "../api/teams";
+import { getClients } from "../api/clients";
 import "../theme/antd-table-theme.css";
 
 interface Client {
@@ -21,17 +22,10 @@ interface TeamRow {
   managerName?: string | null;
   managerEmail?: string | null;
   client?: Client | null;
+  clientId?: number | null;
   _count?: {
     employees: number;
   };
-  // if includeEmployees=true in future:
-  employees?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email?: string | null;
-    title?: string | null;
-  }[];
 }
 
 export const Teams: React.FC = () => {
@@ -41,24 +35,46 @@ export const Teams: React.FC = () => {
   const navigate = useNavigate();
 
   const [teams, setTeams] = useState<TeamRow[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [clientFilter, setClientFilter] = useState<string>("");
 
-  // Fetch all teams once (no backend pagination for now)
-  const fetchTeams = async () => {
+  // debounce ref
+  const debounceRef = useRef<number | null>(null);
+
+  // Fetch clients once (separate lookup)
+  const fetchClients = async () => {
+    try {
+      const resp = await getClients();
+      if (resp && typeof resp === "object" && "success" in resp) {
+        setClients((resp as any).data || []);
+      } else {
+        setClients(Array.isArray(resp) ? resp : []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch clients", err);
+      // not fatal for teams UI, but show a message optionally
+    }
+  };
+
+  // Fetch teams with optional params
+  const fetchTeams = async (params?: {
+    search?: string;
+    clientId?: string | number;
+  }) => {
     try {
       setLoading(true);
-
-      // includeEmployees is not strictly needed, but we can ask in case
-      const response = await getTeams();
-
-      if (response && typeof response === "object" && "success" in response) {
-        setTeams((response as any).data || []);
+      const query: Record<string, string | number> = {};
+      if (params?.search) query.search = params.search;
+      if (params?.clientId) query.clientId = params.clientId;
+      const resp = await getTeams(query);
+      if (resp && typeof resp === "object" && "success" in resp) {
+        setTeams((resp as any).data || []);
       } else {
-        setTeams(Array.isArray(response) ? response : []);
+        setTeams(Array.isArray(resp) ? resp : []);
       }
     } catch (err) {
       console.error("Failed to fetch teams", err);
@@ -69,43 +85,46 @@ export const Teams: React.FC = () => {
     }
   };
 
+  // initial fetch of both teams and clients
   useEffect(() => {
+    fetchClients();
     fetchTeams();
   }, []);
 
-  // Unique client options derived from data
-  const clientOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          teams
-            .map((t) => t.client?.name)
-            .filter((c): c is string => Boolean(c))
-        )
-      ),
-    [teams]
-  );
+  // refetch when clientFilter or searchTerm changes (debounced for search)
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
 
-  // Apply search + filters locally
-  const filteredTeams = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
+    const clientIdParam = clientFilter ? clientFilter : undefined;
 
-    return teams.filter((team) => {
-      // search across name, title, manager, client
-      const matchesSearch =
-        !q ||
-        team.name.toLowerCase().includes(q) ||
-        (team.title ?? "").toLowerCase().includes(q) ||
-        (team.managerName ?? "").toLowerCase().includes(q) ||
-        (team.client?.name ?? "").toLowerCase().includes(q);
+    if (searchTerm && searchTerm.trim().length > 0) {
+      debounceRef.current = window.setTimeout(() => {
+        fetchTeams({ search: searchTerm.trim(), clientId: clientIdParam });
+      }, 350);
+    } else {
+      // immediate fetch when search cleared or only client changed
+      fetchTeams({ clientId: clientIdParam });
+    }
 
-      const matchesClient = !clientFilter || team.client?.name === clientFilter;
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [searchTerm, clientFilter]);
 
-      return matchesSearch && matchesClient;
-    });
-  }, [teams, searchTerm, clientFilter]);
+  // derive clientOptions from clients lookup (not from teams)
+  const clientOptions = useMemo(() => {
+    return clients.map((c) => ({ id: c.id, name: c.name }));
+  }, [clients]);
 
-  const totalCount = filteredTeams.length;
+  // Badge dot when any filter/search is active
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(
+      (searchTerm && searchTerm.trim().length > 0) ||
+        (clientFilter && clientFilter !== "")
+    );
+  }, [searchTerm, clientFilter]);
+
+  const totalCount = teams.length;
 
   const columns: ColumnsType<TeamRow> = [
     {
@@ -172,7 +191,7 @@ export const Teams: React.FC = () => {
     },
     {
       title: "Manager Email",
-      key: "manager",
+      key: "managerEmail",
       width: 220,
       render: (_: any, record: TeamRow) => (
         <div>
@@ -291,22 +310,24 @@ export const Teams: React.FC = () => {
               className="p-2 rounded-md text-sm min-w-[220px]"
             />
 
-            {/* Filters toggle */}
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((prev) => !prev)}
-              style={{
-                border: `1px solid ${palette.border}`,
-                backgroundColor: filtersOpen
-                  ? palette.primary
-                  : palette.surface,
-                color: filtersOpen ? "#fff" : palette.textPrimary,
-              }}
-              className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
-            >
-              <span>⚙️</span>
-              <span>Filters</span>
-            </button>
+            {/* Filters toggle wrapped with AntD Badge dot */}
+            <Badge dot={hasActiveFilters}>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                style={{
+                  border: `1px solid ${palette.border}`,
+                  backgroundColor: filtersOpen
+                    ? palette.primary
+                    : palette.surface,
+                  color: filtersOpen ? "#fff" : palette.textPrimary,
+                }}
+                className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
+              >
+                <span>⚙️</span>
+                <span>Filters</span>
+              </button>
+            </Badge>
 
             {/* Add Team */}
             {isEditable && (
@@ -326,7 +347,7 @@ export const Teams: React.FC = () => {
         </div>
       </div>
 
-      {/* FILTER PANEL (simple, client-only for now) */}
+      {/* FILTER PANEL (client lookup uses separate clients API) */}
       {filtersOpen && (
         <div
           style={{
@@ -358,8 +379,8 @@ export const Teams: React.FC = () => {
               >
                 <option value="">All Clients</option>
                 {clientOptions.map((client) => (
-                  <option key={client} value={client}>
-                    {client}
+                  <option key={client.id} value={client.id}>
+                    {client.name}
                   </option>
                 ))}
               </select>
@@ -372,6 +393,9 @@ export const Teams: React.FC = () => {
               type="button"
               onClick={() => {
                 setClientFilter("");
+                setSearchTerm("");
+                // re-fetch w/o params
+                fetchTeams();
               }}
               style={{
                 color: palette.textSecondary,
@@ -411,7 +435,7 @@ export const Teams: React.FC = () => {
           <Table<TeamRow>
             size="small"
             columns={columns}
-            dataSource={filteredTeams}
+            dataSource={teams}
             rowKey="id"
             loading={loading}
             pagination={{

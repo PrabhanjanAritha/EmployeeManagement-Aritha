@@ -64,7 +64,7 @@ export const RecentHiresChart: React.FC = () => {
             const monthData = last6Months.find(
               (m) => m.month === joinMonth && m.year === joinYear
             );
-
+            // console.log(emp, monthData, joinDate, joinMonth, joinYear);
             if (monthData) {
               monthData.hires++;
             }

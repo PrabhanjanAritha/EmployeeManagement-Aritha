@@ -300,7 +300,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
         return "";
     }
   };
-
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const email = user?.email || "";
+  const initials = email ? email.substring(0, 2).toUpperCase() : "NA";
   return (
     <header
       style={{
@@ -583,15 +585,18 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, toggleTheme }) => {
         <div style={{ position: "relative" }}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full cursor-pointer transition-transform hover:scale-105"
+            className="flex items-center justify-center rounded-full cursor-pointer transition-transform hover:scale-105 font-semibold text-white shadow-md"
             style={{
-              backgroundImage: 'url("https://picsum.photos/200/200")',
-              border: `1px solid ${palette.border}`,
-              width: 40,
-              height: 40,
+              width: 35,
+              height: 35,
+              background: "linear-gradient(135deg, #4f8dfd, #1c62d6)", // cool blue gradient
+              border: `1px solid rgba(255,255,255,0.2)`,
             }}
             title="Profile menu"
-          />
+          >
+            {initials}
+          </button>
+
           {showProfileMenu && (
             <div
               style={{

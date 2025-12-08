@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Switch, Modal, message } from "antd";
+import { Table, Switch, Modal, message, Badge } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTheme } from "../theme/useTheme";
 import { getEmployees, toggleEmployeeStatus } from "../api/employees";
+import { getTeams } from "../api/teams"; // <- add
+import { getClients } from "../api/clients"; // <- add
 import "../theme/antd-table-theme.css";
 
 // Employee type definition
@@ -23,6 +25,7 @@ interface EmployeeRow {
   clients?: string[];
   experienceYearsAtJoining?: number;
   active: boolean;
+  currentExperience: any;
 }
 
 export const Employees: React.FC = () => {
@@ -53,6 +56,44 @@ export const Employees: React.FC = () => {
   const [maxExp, setMaxExp] = useState<string>("");
   const [sortBy] = useState<string>("createdAt");
   const [sortOrder] = useState<"asc" | "desc">("desc");
+
+  // Teams & clients from API
+  const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
+  const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchLookups = async () => {
+      try {
+        const [teamsResp, clientsResp] = await Promise.all([
+          getTeams(), // expected to return array of { id, name }
+          getClients(), // expected to return array of { id, name }
+        ]);
+
+        if (!mounted) return;
+
+        // Normalize responses in case API wraps them
+        const normalize = (r: any) => {
+          if (!r) return [];
+          if (Array.isArray(r)) return r;
+          if (r.data && Array.isArray(r.data)) return r.data;
+          return [];
+        };
+
+        setTeams(normalize(teamsResp));
+        setClients(normalize(clientsResp));
+      } catch (err) {
+        console.error("Failed to fetch teams/clients", err);
+        // optional: message.error("Failed to load teams/clients");
+      }
+    };
+
+    fetchLookups();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Fetch employees with backend filtering
   const fetchEmployees = async () => {
@@ -121,28 +162,15 @@ export const Employees: React.FC = () => {
   ]);
 
   // Derived options from current data
+  // teamOptions / clientOptions derived from API lookups
   const teamOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          employees
-            .map((e) => e.team?.name)
-            .filter((t): t is string => Boolean(t))
-        )
-      ),
-    [employees]
+    () => teams.map((t) => ({ id: t.id, name: t.name })),
+    [teams]
   );
 
   const clientOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          employees
-            .map((e) => e.client?.name)
-            .filter((c): c is string => Boolean(c))
-        )
-      ),
-    [employees]
+    () => clients.map((c) => ({ id: c.id, name: c.name })),
+    [clients]
   );
 
   // // Handle active/inactive toggle in table
@@ -259,6 +287,23 @@ export const Employees: React.FC = () => {
       ),
     },
     {
+      title: "Current Exp",
+      dataIndex: "currentExperience",
+      key: "experience",
+      width: 100,
+
+      render: (_teamName: string | undefined, record: EmployeeRow) => (
+        <span
+          style={{
+            color: record.active ? palette.textPrimary : palette.textSecondary,
+            opacity: record.active ? 1 : 0.6,
+          }}
+        >
+          {record?.currentExperience?.formatted || "-"}
+        </span>
+      ),
+    },
+    {
       title: "Team",
       dataIndex: ["team", "name"],
       key: "team",
@@ -325,23 +370,7 @@ export const Employees: React.FC = () => {
         </span>
       ),
     },
-    {
-      title: "Exp (yrs)",
-      dataIndex: "experienceYearsAtJoining",
-      key: "experience",
-      width: 100,
-      align: "right",
-      render: (exp: number | undefined, record: EmployeeRow) => (
-        <span
-          style={{
-            color: record.active ? palette.textPrimary : palette.textSecondary,
-            opacity: record.active ? 1 : 0.6,
-          }}
-        >
-          {exp != null ? exp : "-"}
-        </span>
-      ),
-    },
+
     {
       title: "Date of Joining",
       dataIndex: "dateOfJoining",
@@ -420,6 +449,30 @@ export const Employees: React.FC = () => {
         ),
     },
   ];
+  // whether any filter (including search or showInactive) is active
+  const hasActiveFilters = useMemo(() => {
+    // consider these as "filters" for the red dot
+    const anyFilter =
+      Boolean(searchTerm?.trim()) ||
+      Boolean(showInactive) || // if toggled from default (active)
+      Boolean(teamFilter) ||
+      Boolean(clientFilter) ||
+      (genderFilter && genderFilter !== "all") ||
+      Boolean(titleFilter?.trim()) ||
+      Boolean(minExp) ||
+      Boolean(maxExp);
+
+    return anyFilter;
+  }, [
+    searchTerm,
+    showInactive,
+    teamFilter,
+    clientFilter,
+    genderFilter,
+    titleFilter,
+    minExp,
+    maxExp,
+  ]);
 
   return (
     <div className="w-full">
@@ -491,22 +544,23 @@ export const Employees: React.FC = () => {
               }}
               className="p-2 rounded-md text-sm min-w-[220px]"
             />
-
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((prev) => !prev)}
-              style={{
-                border: `1px solid ${palette.border}`,
-                backgroundColor: filtersOpen
-                  ? palette.primary
-                  : palette.surface,
-                color: filtersOpen ? "#fff" : palette.textPrimary,
-              }}
-              className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
-            >
-              <span>⚙️</span>
-              <span>Filters</span>
-            </button>
+            <Badge dot={hasActiveFilters} offset={[-2, 4]}>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                style={{
+                  border: `1px solid ${palette.border}`,
+                  backgroundColor: filtersOpen
+                    ? palette.primary
+                    : palette.surface,
+                  color: filtersOpen ? "#fff" : palette.textPrimary,
+                }}
+                className="px-3 py-2 rounded-md text-sm flex items-center gap-1"
+              >
+                <span>⚙️</span>
+                <span>Filters</span>
+              </button>
+            </Badge>
 
             {isEditable && (
               <button
@@ -560,8 +614,8 @@ export const Employees: React.FC = () => {
               >
                 <option value="">All Teams</option>
                 {teamOptions.map((team) => (
-                  <option key={team} value={team}>
-                    {team}
+                  <option key={team.id} value={team.id}>
+                    {team.name}
                   </option>
                 ))}
               </select>
@@ -592,8 +646,8 @@ export const Employees: React.FC = () => {
               >
                 <option value="">All Clients</option>
                 {clientOptions.map((client) => (
-                  <option key={client} value={client}>
-                    {client}
+                  <option key={client.id} value={client.id}>
+                    {client.name}
                   </option>
                 ))}
               </select>
@@ -663,7 +717,7 @@ export const Employees: React.FC = () => {
                   fontSize: 12,
                 }}
               >
-                Experience (Min / Max years)
+                Joining Experience (Min / Max years)
               </label>
               <div className="flex gap-2">
                 <input

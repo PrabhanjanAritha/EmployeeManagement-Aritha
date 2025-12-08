@@ -316,7 +316,7 @@ export const EditClient: React.FC = () => {
                   <Descriptions
                     bordered
                     column={1}
-                    style={{ backgroundColor: palette.surface }}
+                    style={{ backgroundColor: palette.surface_w }}
                   >
                     <Descriptions.Item label="Client Name">
                       {client.name}
@@ -342,7 +342,7 @@ export const EditClient: React.FC = () => {
                   <Descriptions
                     bordered
                     column={1}
-                    style={{ backgroundColor: palette.surface }}
+                    style={{ backgroundColor: palette.surface_w }}
                   >
                     <Descriptions.Item label="Name">
                       {client.pocInternalName || "-"}
@@ -368,7 +368,7 @@ export const EditClient: React.FC = () => {
                   <Descriptions
                     bordered
                     column={1}
-                    style={{ backgroundColor: palette.surface }}
+                    style={{ backgroundColor: palette.surface_w }}
                   >
                     <Descriptions.Item label="Name">
                       {client.pocExternalName || "-"}
@@ -385,7 +385,7 @@ export const EditClient: React.FC = () => {
                     <Card
                       size="small"
                       style={{
-                        backgroundColor: palette.surface,
+                        backgroundColor: palette.surface_w,
                         borderColor: palette.border,
                       }}
                     >
@@ -407,7 +407,7 @@ export const EditClient: React.FC = () => {
                     <Card
                       size="small"
                       style={{
-                        backgroundColor: palette.surface,
+                        backgroundColor: palette.surface_w,
                         borderColor: palette.border,
                       }}
                     >

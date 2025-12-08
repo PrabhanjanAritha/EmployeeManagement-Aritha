@@ -439,7 +439,7 @@ export const EditTeam: React.FC = () => {
                     bordered
                     column={{ xs: 1, sm: 2, md: 2 }}
                     style={{
-                      backgroundColor: palette.surface,
+                      backgroundColor: palette.surface_w,
                     }}
                   >
                     <Descriptions.Item label="Team Name">
@@ -481,7 +481,7 @@ export const EditTeam: React.FC = () => {
                             key={emp.id}
                             size="small"
                             style={{
-                              backgroundColor: palette.surface,
+                              backgroundColor: palette.surface_w,
                               borderColor: palette.border,
                             }}
                           >
@@ -632,26 +632,41 @@ export const EditTeam: React.FC = () => {
                       }}
                       className="rounded-lg border overflow-hidden"
                     >
-                      <Table<Employee>
-                        size="small"
-                        columns={employeeColumns}
-                        dataSource={filteredEmployees}
-                        rowKey="id"
-                        loading={loadingEmployees}
-                        rowSelection={rowSelection}
-                        pagination={{
-                          current: pagination.current,
-                          pageSize: pagination.pageSize,
-                          total: filteredEmployees.length,
-                          showSizeChanger: true,
-                          pageSizeOptions: ["5", "10", "20"],
-                          showTotal: (total, range) =>
-                            `${range[0]}-${range[1]} of ${total}`,
-                          onChange: (page, pageSize) =>
-                            setPagination({ current: page, pageSize }),
-                        }}
-                        scroll={{ x: 700 }}
-                      />
+                      <div
+                        className="custom-employee-table"
+                        style={
+                          {
+                            "--surface": palette.surface,
+                            "--surfaceHover": palette.surface,
+                            "--textPrimary": palette.textPrimary,
+                            "--textSecondary": palette.textSecondary,
+                            "--border": palette.border,
+                            "--primary": palette.primary,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <Table<Employee>
+                          size="small"
+                          columns={employeeColumns}
+                          dataSource={filteredEmployees}
+                          rowKey="id"
+                          loading={loadingEmployees}
+                          rowSelection={rowSelection}
+                          pagination={{
+                            className: "employee-pagination",
+                            current: pagination.current,
+                            pageSize: pagination.pageSize,
+                            total: filteredEmployees.length,
+                            showSizeChanger: true,
+                            pageSizeOptions: ["5", "10", "20"],
+                            showTotal: (total, range) =>
+                              `${range[0]}-${range[1]} of ${total}`,
+                            onChange: (page, pageSize) =>
+                              setPagination({ current: page, pageSize }),
+                          }}
+                          scroll={{ x: 700 }}
+                        />
+                      </div>
                     </div>
 
                     {/* Selected Summary */}
