@@ -297,6 +297,7 @@ export const Employees: React.FC = () => {
       dataIndex: "title",
       key: "title",
       width: 160,
+      ellipsis: true,
       render: (title: string | undefined, record: EmployeeRow) => (
         <span
           style={{
