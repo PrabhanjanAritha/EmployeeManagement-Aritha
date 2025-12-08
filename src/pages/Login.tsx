@@ -502,7 +502,7 @@ export const Login: React.FC = () => {
                       </Form.Item>
                     </Form>
 
-                    <div
+                    {/* <div
                       className="ae-demo-block"
                       style={{
                         backgroundColor: isDark ? "#020617" : "#f9fafb",
@@ -526,7 +526,7 @@ export const Login: React.FC = () => {
                     >
                       Use the above demo login to explore the Aritha Employee
                       Portal.
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </Col>
