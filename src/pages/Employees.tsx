@@ -8,6 +8,7 @@ import { getEmployees, toggleEmployeeStatus } from "../api/employees";
 import { getTeams } from "../api/teams"; // <- add
 import { getClients } from "../api/clients"; // <- add
 import "../theme/antd-table-theme.css";
+import { safeCapitalize } from "../components/Helper";
 
 // Employee type definition
 interface EmployeeRow {
@@ -258,17 +259,25 @@ export const Employees: React.FC = () => {
       title: "Name",
       key: "name",
       width: 180,
-      render: (_: any, record: EmployeeRow) => (
-        <span
-          style={{
-            color: record.active ? palette.textPrimary : palette.textSecondary,
-            opacity: record.active ? 1 : 0.6,
-          }}
-        >
-          {record.firstName} {record.lastName}
-        </span>
-      ),
+      render: (_: any, record: EmployeeRow) => {
+        const first = safeCapitalize(record?.firstName);
+        const last = safeCapitalize(record?.lastName);
+
+        return (
+          <span
+            style={{
+              color: record.active
+                ? palette.textPrimary
+                : palette.textSecondary,
+              opacity: record.active ? 1 : 0.6,
+            }}
+          >
+            {first} {last}
+          </span>
+        );
+      },
     },
+
     {
       title: "Email",
       dataIndex: "email",
