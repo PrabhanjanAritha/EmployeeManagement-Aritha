@@ -20,7 +20,7 @@ export const QuickLinks: React.FC<QuickLinksProps> = ({ isEditable }) => {
         <button
           onClick={() => navigate("/employees/add")}
           style={{ backgroundColor: palette.primary, color: "white" }}
-          className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined">
             {isEditable ? "person_add" : "visibility"}
@@ -37,7 +37,7 @@ export const QuickLinks: React.FC<QuickLinksProps> = ({ isEditable }) => {
             color: palette.textPrimary,
             borderColor: palette.border,
           }}
-          className="flex items-center justify-center gap-2 rounded-lg p-6 border shadow-sm transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg p-6 border shadow-sm transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined">groups</span>
           <span className="text-base font-semibold">View All Teams</span>
@@ -50,7 +50,7 @@ export const QuickLinks: React.FC<QuickLinksProps> = ({ isEditable }) => {
             color: palette.textPrimary,
             borderColor: palette.border,
           }}
-          className="flex items-center justify-center gap-2 rounded-lg p-6 border shadow-sm transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg p-6 border shadow-sm transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined">manage_accounts</span>
           <span className="text-base font-semibold">Manage Clients</span>
