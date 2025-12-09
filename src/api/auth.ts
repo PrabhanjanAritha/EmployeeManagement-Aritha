@@ -32,3 +32,78 @@ export async function loginApi(payload: LoginPayload) {
 
   return user;
 }
+
+/**
+ * Set recovery answer (admin only)
+ */
+export const setRecoveryAnswer = async (answer: string) => {
+  try {
+    const res = await api.post("/auth/set-recovery-answer", { answer });
+    return res.data;
+  } catch (error) {
+    console.error("Error setting recovery answer:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update recovery answer (admin only)
+ */
+export const updateRecoveryAnswer = async (
+  oldAnswer: string,
+  newAnswer: string
+) => {
+  try {
+    const res = await api.post("/auth/update-recovery-answer", {
+      oldAnswer,
+      newAnswer,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error updating recovery answer:", error);
+    throw error;
+  }
+};
+
+/**
+ * Change password (admin only)
+ */
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string
+) => {
+  try {
+    const res = await api.post("/auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error changing password:", error);
+    throw error;
+  }
+};
+export const resetAdminPassword = async (
+  answer: string,
+  newPassword: string
+) => {
+  try {
+    const res = await api.post("/auth/reset-admin-password", {
+      answer,
+      newPassword,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error resetting admin password:", err);
+    throw err;
+  }
+};
+export default {
+  login,
+  register,
+  loginApi,
+  setRecoveryAnswer,
+  updateRecoveryAnswer,
+  changePassword,
+  resetAdminPassword,
+};

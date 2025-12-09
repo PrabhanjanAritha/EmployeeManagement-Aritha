@@ -75,10 +75,19 @@ export const deleteUser = async (userId: number) => {
     throw error;
   }
 };
-
+export const checkRecoveryConfigured = async () => {
+  try {
+    const response = await api.get("/auth/recovery-configured");
+    return response.data; // { configured: boolean }
+  } catch (error) {
+    console.error("Error checking recovery configuration:", error);
+    throw error;
+  }
+};
 export default {
   getUsers,
   registerUser,
   updateUserStatus,
   deleteUser,
+  checkRecoveryConfigured,
 };

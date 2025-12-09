@@ -18,7 +18,9 @@ export const QuickLinks: React.FC<QuickLinksProps> = ({ isEditable }) => {
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
-          onClick={() => navigate("/employees/add")}
+          onClick={() =>
+            isEditable ? navigate("/employees/add") : navigate("/employees")
+          }
           style={{ backgroundColor: palette.primary, color: "white" }}
           className="flex items-center justify-center gap-2 rounded-lg p-6 shadow-sm hover:opacity-90 transition-colors cursor-pointer"
         >

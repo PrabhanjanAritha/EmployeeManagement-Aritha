@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Input, Button, Row, Col, message } from "antd";
+import { Form, Input, Button, Row, Col, message, Modal } from "antd";
 // import { useDispatch } from 'react-redux';
 import { useTheme } from "../theme/useTheme";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { loginApi } from "../api/auth";
+import { loginApi, resetAdminPassword } from "../api/auth";
 import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
+import { KeyOutlined } from "@ant-design/icons";
+
 import Logo from "../components/ui/Logo";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -15,7 +17,9 @@ type LoginFormValues = {
 };
 export const Login: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
-
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetForm] = Form.useForm();
   const { palette, isDark } = useTheme();
   const navigate = useNavigate();
   // const dispatch = useDispatch();
@@ -39,6 +43,35 @@ export const Login: React.FC = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+  const handleResetPassword = async (values: {
+    answer: string;
+    newPassword: string;
+    confirmPassword?: string;
+  }) => {
+    try {
+      setResetSubmitting(true);
+
+      // call API helper (answer corresponds to "recovery key" )
+      const res = await resetAdminPassword(
+        values.answer.trim(),
+        values.newPassword
+      );
+
+      message.success(res.message || "Password reset successful");
+      setShowResetModal(false);
+      resetForm.resetFields();
+
+      // Optionally: if you want to automatically redirect to login or prefill
+      // you can do that here.
+    } catch (err: any) {
+      // backend returns { error: "..."} or throws
+      const errMsg = err?.error || err?.message || "Failed to reset password";
+      console.error("Reset password error:", err);
+      message.error(errMsg);
+    } finally {
+      setResetSubmitting(false);
     }
   };
 
@@ -475,6 +508,16 @@ export const Login: React.FC = () => {
                               />
                             )
                           }
+                          suffix={
+                            <KeyOutlined
+                              onClick={() => setShowResetModal(true)}
+                              style={{
+                                cursor: "pointer",
+                                color: "black",
+                              }}
+                              title="Forgot password / Reset with recovery key"
+                            />
+                          }
                           style={{
                             backgroundColor: isDark ? "#020617" : "#f9fafb",
                             borderColor: palette.border,
@@ -534,6 +577,81 @@ export const Login: React.FC = () => {
           </div>
         </div>
       </div>
+      <Modal
+        title="Reset Admin Password"
+        open={showResetModal}
+        onCancel={() => {
+          setShowResetModal(false);
+          resetForm.resetFields();
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={resetForm}
+          layout="vertical"
+          onFinish={async (values) => {
+            // call handler below
+            await handleResetPassword(values);
+          }}
+          autoComplete="off"
+        >
+          <Form.Item
+            name="answer"
+            label="Recovery Key"
+            rules={[{ required: true, message: "Recovery key is required" }]}
+          >
+            <Input placeholder="Enter your recovery key" />
+          </Form.Item>
+
+          <Form.Item
+            name="newPassword"
+            label="New Password"
+            rules={[
+              { required: true, message: "New password is required" },
+              { min: 8, message: "Password must be at least 8 characters" },
+            ]}
+            hasFeedback
+          >
+            <Input.Password placeholder="New password" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm Password"
+            dependencies={["newPassword"]}
+            hasFeedback
+            rules={[
+              { required: true, message: "Please confirm your password" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Passwords do not match"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Confirm new password" />
+          </Form.Item>
+
+          <Form.Item style={{ textAlign: "right", marginBottom: 0 }}>
+            <Button
+              onClick={() => {
+                setShowResetModal(false);
+                resetForm.resetFields();
+              }}
+              style={{ marginRight: 8 }}
+            >
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={resetSubmitting}>
+              Reset Password
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </StyleProvider>
   );
 };
